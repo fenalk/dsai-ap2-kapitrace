@@ -1,0 +1,239 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1780" height="1600" viewBox="0 0 1780 1600" role="img" aria-labelledby="fluxo-title fluxo-desc" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif">
+<title id="fluxo-title">KapiTrace — Fluxo de funcionamento da aplicação</title>
+<desc id="fluxo-desc">Fluxo completo: usuário, frontend Next.js, backend Express (autenticação, validação, cache, inteligência e score), PostgreSQL/Prisma e sete APIs externas, incluindo cache HIT, stale, 400/401/429/500/503 e dados ausentes.</desc>
+<defs><marker id="arw0" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="arw1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker><marker id="arw2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="arw3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker><marker id="arw4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/></marker><marker id="arw5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="arw6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="arw7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="arw8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="arw9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="arw10" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker><marker id="arw11" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker><marker id="arw12" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="arw13" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="arw14" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="arw15" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/></marker><marker id="arw16" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="arw17" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker><marker id="arw18" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="arw19" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker><marker id="arw20" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker><marker id="arw21" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="arw22" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="arw23" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#db2777"/></marker></defs>
+<rect width="100%" height="100%" fill="#f5f8fb"/>
+<rect x="0" y="0" width="1780" height="86" fill="#0f172a"/>
+<text x="32" y="40" font-size="25" font-weight="800" fill="#ffffff" text-anchor="start">KapiTrace — Fluxo de Funcionamento</text>
+<text x="32" y="64" font-size="12.5" font-weight="400" fill="#cbd5e1" text-anchor="start">Entrada do usuário → autenticação → validação → cache → inteligência externa → ThreatScore → apresentação do resultado</text>
+<rect x="1236" y="12" width="520" height="62" rx="10" fill="#1e293b" stroke="#334155"/>
+<rect x="1250" y="23" width="12" height="12" rx="3" fill="#2563eb"/>
+<text x="1268" y="33" font-size="10.5" font-weight="400" fill="#e2e8f0" text-anchor="start">Frontend Next.js</text>
+<rect x="1420" y="23" width="12" height="12" rx="3" fill="#059669"/>
+<text x="1438" y="33" font-size="10.5" font-weight="400" fill="#e2e8f0" text-anchor="start">Backend Express</text>
+<rect x="1590" y="23" width="12" height="12" rx="3" fill="#d97706"/>
+<text x="1608" y="33" font-size="10.5" font-weight="400" fill="#e2e8f0" text-anchor="start">PostgreSQL / Prisma</text>
+<rect x="1250" y="45" width="12" height="12" rx="3" fill="#db2777"/>
+<text x="1268" y="55" font-size="10.5" font-weight="400" fill="#e2e8f0" text-anchor="start">APIs externas</text>
+<rect x="1420" y="45" width="12" height="12" rx="3" fill="#dc2626"/>
+<text x="1438" y="55" font-size="10.5" font-weight="400" fill="#e2e8f0" text-anchor="start">Erro / dados ausentes</text>
+<rect x="1590" y="45" width="12" height="12" rx="3" fill="#7c3aed"/>
+<text x="1608" y="55" font-size="10.5" font-weight="400" fill="#e2e8f0" text-anchor="start">Regras e observações</text>
+<text x="1250" y="68" font-size="10" font-weight="400" fill="#94a3b8" text-anchor="start">──▶ requisição          ┈┈▶ resposta / leitura</text>
+<rect x="24" y="96" width="468" height="1142" rx="14" fill="none" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="7 5"/>
+<rect x="36" y="84" width="270.79999999999995" height="24" rx="12" fill="#2563eb"/>
+<text x="46" y="100" font-size="11" font-weight="700" fill="#ffffff" text-anchor="start">FRONTEND  (Next.js 16 · React 19)</text>
+<rect x="520" y="96" width="708" height="1142" rx="14" fill="none" stroke="#059669" stroke-width="1.6" stroke-dasharray="7 5"/>
+<rect x="532" y="84" width="270.79999999999995" height="24" rx="12" fill="#059669"/>
+<text x="542" y="100" font-size="11" font-weight="700" fill="#ffffff" text-anchor="start">BACKEND  (Express 5 · TypeScript)</text>
+<rect x="1272" y="96" width="488" height="1142" rx="14" fill="none" stroke="#d97706" stroke-width="1.6" stroke-dasharray="7 5"/>
+<rect x="1284" y="84" width="362" height="24" rx="12" fill="#d97706"/>
+<text x="1294" y="100" font-size="11" font-weight="700" fill="#ffffff" text-anchor="start">BANCO DE DADOS  (PostgreSQL 16 · Prisma 5.22)</text>
+<rect x="44" y="122" width="428" height="56" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="60" y="145" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">Usuário (navegador)</text>
+<text x="60" y="164" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Landing → /login · /lookup · /dashboard</text>
+<rect x="44" y="208" width="428" height="95" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="60" y="231" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">app/login/page.tsx</text>
+<text x="60" y="250" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Entrar ou criar conta (register + login)</text>
+<text x="60" y="263" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Sucesso → /lookup · erro → role="alert"</text>
+<rect x="60" y="283" width="28.4" height="17" rx="8.5" fill="#059669" fill-opacity="0.15"/>
+<text x="74.2" y="295" font-size="9.5" font-weight="700" fill="#059669" text-anchor="middle">B0</text>
+<rect x="44" y="333" width="428" height="69" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="60" y="356" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">RequireSession.tsx</text>
+<text x="60" y="375" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Guard useSyncExternalStore(hasSession)</text>
+<text x="60" y="388" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Sem sessão → redireciona para /login</text>
+<rect x="44" y="432" width="428" height="108" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="60" y="455" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">lookup/page.tsx</text>
+<text x="60" y="474" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Abas IP / Domain / Hash</text>
+<text x="60" y="487" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Email: "integração ainda indisponível"</text>
+<text x="60" y="500" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Consulta e "Adicionar à Watchlist"</text>
+<rect x="60" y="520" width="28.4" height="17" rx="8.5" fill="#059669" fill-opacity="0.15"/>
+<text x="74.2" y="532" font-size="9.5" font-weight="700" fill="#059669" text-anchor="middle">B2</text>
+<rect x="94.4" y="520" width="28.4" height="17" rx="8.5" fill="#059669" fill-opacity="0.15"/>
+<text x="108.60000000000001" y="532" font-size="9.5" font-weight="700" fill="#059669" text-anchor="middle">B9</text>
+<rect x="44" y="570" width="428" height="69" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="60" y="593" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">lib/api.ts + lib/session.ts</text>
+<text x="60" y="612" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Injeta Bearer em lookup, watchlist e refresh</text>
+<text x="60" y="625" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">JWT só em memória: sem storage nem cookie</text>
+<rect x="44" y="669" width="428" height="95" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="60" y="692" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">Renderização do resultado</text>
+<text x="60" y="711" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">ThreatScore ou "Sem pontuação" · risco · cobertura %</text>
+<text x="60" y="724" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Status por fonte · stale · partial · insufficient_data</text>
+<rect x="60" y="744" width="28.4" height="17" rx="8.5" fill="#059669" fill-opacity="0.15"/>
+<text x="74.2" y="756" font-size="9.5" font-weight="700" fill="#059669" text-anchor="middle">B6</text>
+<rect x="540" y="122" width="664" height="82" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="556" y="145" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">app.ts — helmet · cors · express.json</text>
+<text x="556" y="164" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Monta /api/auth, /api/lookup, /api/watchlist e /health</text>
+<rect x="556" y="184" width="28.4" height="17" rx="8.5" fill="#059669" fill-opacity="0.15"/>
+<text x="570.2" y="196" font-size="9.5" font-weight="700" fill="#059669" text-anchor="middle">B0</text>
+<rect x="590.4" y="184" width="28.4" height="17" rx="8.5" fill="#059669" fill-opacity="0.15"/>
+<text x="604.6" y="196" font-size="9.5" font-weight="700" fill="#059669" text-anchor="middle">B1</text>
+<rect x="540" y="234" width="664" height="95" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="556" y="257" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">middleware/auth.ts — authenticate()</text>
+<text x="556" y="276" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">HS256 · issuer kapitrace · audience kapitrace-web · exp ≤ 24h</text>
+<text x="556" y="289" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">lookup, watchlist e refresh exigem Bearer</text>
+<rect x="556" y="309" width="28.4" height="17" rx="8.5" fill="#059669" fill-opacity="0.15"/>
+<text x="570.2" y="321" font-size="9.5" font-weight="700" fill="#059669" text-anchor="middle">B1</text>
+<rect x="540" y="359" width="664" height="82" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="556" y="382" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">lookup-limit.ts — 30 req/min por IP</text>
+<text x="556" y="401" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Só /api/lookup · janela fixa · por processo</text>
+<rect x="556" y="421" width="28.4" height="17" rx="8.5" fill="#059669" fill-opacity="0.15"/>
+<text x="570.2" y="433" font-size="9.5" font-weight="700" fill="#059669" text-anchor="middle">B2</text>
+<rect x="540" y="471" width="664" height="108" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="556" y="494" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">lookup.controller.ts — normalizeIndicator()</text>
+<text x="556" y="513" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">IPv4/IPv6 públicos · domínio RFC 1035/1123</text>
+<text x="556" y="526" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">MD5/SHA-1/SHA-256 · IDN → ASCII</text>
+<text x="556" y="539" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">IP privado/reservado recusado</text>
+<rect x="556" y="559" width="28.4" height="17" rx="8.5" fill="#059669" fill-opacity="0.15"/>
+<text x="570.2" y="571" font-size="9.5" font-weight="700" fill="#059669" text-anchor="middle">B2</text>
+<rect x="540" y="609" width="664" height="39" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="556" y="632" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">performLookup + single-flight (Map ≤ 128)</text>
+<rect x="540" y="678" width="664" height="56" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="556" y="701" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">Leitura e validação do cache</text>
+<text x="556" y="720" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Score 0–100 · versão "real-api-v1" · janela de expiração</text>
+<rect x="540" y="764" width="664" height="69" rx="9" fill="#d9f2e6" stroke="#d97706" stroke-width="1.6"/>
+<text x="556" y="787" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">Cache HIT → source: "cache"</text>
+<text x="556" y="806" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Sem chamadas externas · sem upsert</text>
+<text x="556" y="819" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">partial = stale || cache partial</text>
+<rect x="540" y="863" width="664" height="69" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="556" y="886" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">intelligence.service.ts — collectIntelligence()</text>
+<text x="556" y="905" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Normaliza evidência e consolida fatores</text>
+<text x="556" y="918" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">7 provedores em paralelo (AbortController)</text>
+<rect x="540" y="962" width="664" height="56" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="556" y="985" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">intelligence/http.ts — getJson() (fetch nativo)</text>
+<text x="556" y="1004" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Allowlist de hosts · redirect: error · 5s por fonte</text>
+<rect x="540" y="1048" width="664" height="56" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="556" y="1071" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">threat-score.service.ts — calculate_threat_score()</text>
+<text x="556" y="1090" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Função pura: pesos 0,35/0,40/0,15/0,10 renormalizados + modificadores</text>
+<rect x="540" y="1134" width="664" height="82" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="556" y="1157" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">lookup.controller.ts — resposta JSON</text>
+<text x="556" y="1176" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">source api|cache · analysis · sources[] · partial · stale</text>
+<rect x="556" y="1196" width="28.4" height="17" rx="8.5" fill="#059669" fill-opacity="0.15"/>
+<text x="570.2" y="1208" font-size="9.5" font-weight="700" fill="#059669" text-anchor="middle">B8</text>
+<rect x="1280" y="122" width="456" height="56" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="1296" y="145" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">shared/prisma.ts — PrismaClient</text>
+<text x="1296" y="164" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Singleton por processo · DATABASE_URL validada</text>
+<rect x="1280" y="208" width="456" height="82" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="1296" y="231" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">User</text>
+<text x="1296" y="250" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">id · email (unique) · password (bcrypt) · role admin|analyst|viewer</text>
+<rect x="1296" y="270" width="28.4" height="17" rx="8.5" fill="#059669" fill-opacity="0.15"/>
+<text x="1310.2" y="282" font-size="9.5" font-weight="700" fill="#059669" text-anchor="middle">B1</text>
+<rect x="1280" y="320" width="456" height="56" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="1296" y="343" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">Watchlist</text>
+<text x="1296" y="362" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">userId · itemValue · itemType (ip/domain/hash/email)</text>
+<rect x="1280" y="406" width="456" height="95" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="1296" y="429" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">IpCache · DomainCache · HashCache</text>
+<text x="1296" y="448" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">threatScore + data (JSON serializado em text)</text>
+<text x="1296" y="461" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Upsert somente quando threatScore ≠ null</text>
+<rect x="1296" y="481" width="28.4" height="17" rx="8.5" fill="#059669" fill-opacity="0.15"/>
+<text x="1310.2" y="493" font-size="9.5" font-weight="700" fill="#059669" text-anchor="middle">B2</text>
+<rect x="1330.4" y="481" width="28.4" height="17" rx="8.5" fill="#059669" fill-opacity="0.15"/>
+<text x="1344.6000000000001" y="493" font-size="9.5" font-weight="700" fill="#059669" text-anchor="middle">B5</text>
+<rect x="1280" y="531" width="456" height="82" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="1296" y="554" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">EmailCache  (sem uso no código)</text>
+<text x="1296" y="573" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Modelo e tabela existem; nenhuma rota a consulta</text>
+<rect x="1296" y="593" width="22.2" height="17" rx="8.5" fill="#059669" fill-opacity="0.15"/>
+<text x="1307.1" y="605" font-size="9.5" font-weight="700" fill="#059669" text-anchor="middle">⚠</text>
+<rect x="1280" y="643" width="456" height="82" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="1296" y="666" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">AuditLog  (sem uso no código)</text>
+<text x="1296" y="685" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Modelo e tabela existem; nada é gravado</text>
+<rect x="1296" y="705" width="22.2" height="17" rx="8.5" fill="#059669" fill-opacity="0.15"/>
+<text x="1307.1" y="717" font-size="9.5" font-weight="700" fill="#059669" text-anchor="middle">⚠</text>
+<rect x="1280" y="755" width="456" height="56" rx="9" fill="#e2f6ec" stroke="#059669" stroke-width="1.6"/>
+<text x="1296" y="778" font-size="12.5" font-weight="700" fill="#0f172a" text-anchor="start">RLS + 3 migrations</text>
+<text x="1296" y="797" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Estrutura · backend-only security · histórico privado</text>
+<rect x="540" y="1278" width="664" height="132" rx="14" fill="#fde8ef" stroke="#db2777" stroke-width="1.6"/>
+<text x="556" y="1302" font-size="12.5" font-weight="700" fill="#db2777" text-anchor="start">APIs EXTERNAS — 7 provedores chamados pelo backend (chave vazia = "not_configured")</text>
+<rect x="554" y="1318" width="164" height="38" rx="8" fill="#ffffff" stroke="#db2777"/>
+<text x="564" y="1335" font-size="11" font-weight="700" fill="#0f172a" text-anchor="start">AbuseIPDB</text>
+<text x="564" y="1349" font-size="9.5" font-weight="400" fill="#4b5563" text-anchor="start">IP · abuseConfidenceScore</text>
+<rect x="724" y="1318" width="164" height="38" rx="8" fill="#ffffff" stroke="#db2777"/>
+<text x="734" y="1335" font-size="11" font-weight="700" fill="#0f172a" text-anchor="start">VirusTotal</text>
+<text x="734" y="1349" font-size="9.5" font-weight="400" fill="#4b5563" text-anchor="start">IP/domínio/hash · detecções</text>
+<rect x="894" y="1318" width="164" height="38" rx="8" fill="#ffffff" stroke="#db2777"/>
+<text x="904" y="1335" font-size="11" font-weight="700" fill="#0f172a" text-anchor="start">Shodan</text>
+<text x="904" y="1349" font-size="9.5" font-weight="400" fill="#4b5563" text-anchor="start">IP · portas + CVEs</text>
+<rect x="1064" y="1318" width="164" height="38" rx="8" fill="#ffffff" stroke="#db2777"/>
+<text x="1074" y="1335" font-size="11" font-weight="700" fill="#0f172a" text-anchor="start">GreyNoise</text>
+<text x="1074" y="1349" font-size="9.5" font-weight="400" fill="#4b5563" text-anchor="start">IPv4 · classification</text>
+<rect x="554" y="1366" width="164" height="38" rx="8" fill="#ffffff" stroke="#db2777"/>
+<text x="564" y="1383" font-size="11" font-weight="700" fill="#0f172a" text-anchor="start">AlienVault OTX</text>
+<text x="564" y="1397" font-size="9.5" font-weight="400" fill="#4b5563" text-anchor="start">IP/domínio/hash · pulsos</text>
+<rect x="724" y="1366" width="164" height="38" rx="8" fill="#ffffff" stroke="#db2777"/>
+<text x="734" y="1383" font-size="11" font-weight="700" fill="#0f172a" text-anchor="start">URLScan.io</text>
+<text x="734" y="1397" font-size="9.5" font-weight="400" fill="#4b5563" text-anchor="start">Domínio · resultados</text>
+<rect x="894" y="1366" width="164" height="38" rx="8" fill="#ffffff" stroke="#db2777"/>
+<text x="904" y="1383" font-size="11" font-weight="700" fill="#0f172a" text-anchor="start">IPInfo</text>
+<text x="904" y="1397" font-size="9.5" font-weight="400" fill="#4b5563" text-anchor="start">IP · país/ASN/ISP</text>
+<rect x="24" y="1434" width="520" height="132" rx="14" fill="none" stroke="#dc2626" stroke-width="1.6" stroke-dasharray="7 5"/>
+<rect x="36" y="1422" width="240.39999999999998" height="24" rx="12" fill="#dc2626"/>
+<text x="46" y="1438" font-size="11" font-weight="700" fill="#ffffff" text-anchor="start">CAMINHOS ALTERNATIVOS E ERROS</text>
+<rect x="40" y="1458" width="240" height="96" rx="9" fill="#fbe3e3" stroke="#dc2626" stroke-width="1.5"/>
+<text x="52" y="1476" font-size="12" font-weight="700" fill="#0f172a" text-anchor="start">A1 · 401 — autenticação</text>
+<text x="52" y="1491" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Token ausente, inválido ou</text>
+<text x="52" y="1504" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">expirado → WWW-Authenticate:</text>
+<text x="52" y="1517" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Bearer; sem cache nem provedores</text>
+<rect x="290" y="1458" width="240" height="96" rx="9" fill="#fbe3e3" stroke="#dc2626" stroke-width="1.5"/>
+<text x="302" y="1476" font-size="12" font-weight="700" fill="#0f172a" text-anchor="start">A2 · 400 — entrada inválida</text>
+<text x="302" y="1491" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Tipo ou IOC malformado (inclui IP</text>
+<text x="302" y="1504" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">não público) → retorna antes do</text>
+<text x="302" y="1517" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">cache</text>
+<rect x="560" y="1434" width="660" height="132" rx="14" fill="none" stroke="#7c3aed" stroke-width="1.6" stroke-dasharray="7 5"/>
+<rect x="572" y="1422" width="217.6" height="24" rx="12" fill="#7c3aed"/>
+<text x="582" y="1438" font-size="11" font-weight="700" fill="#ffffff" text-anchor="start">REGRAS DO MOTOR E DO CACHE</text>
+<rect x="576" y="1458" width="630" height="96" rx="9" fill="#f3f0ff" stroke="#7c3aed" stroke-width="1.5"/>
+<text x="588" y="1476" font-size="12" font-weight="700" fill="#0f172a" text-anchor="start">ThreatScore: renormaliza apenas métricas disponíveis (domain/hash usam só</text>
+<text x="588" y="1491" font-size="12" font-weight="700" fill="#0f172a" text-anchor="start">maliciousDetectionsRatio); sem métrica válida o score é null; confidence =</text>
+<text x="588" y="1506" font-size="12" font-weight="700" fill="#0f172a" text-anchor="start">cobertura de evidência</text>
+<text x="588" y="1521" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Cache completo 24h · parcial 5min · versão real-api-v1 · cache stale ≤ 48h não renova a coleta ·</text>
+<text x="588" y="1534" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">rate limit e single-flight são por processo</text>
+<rect x="1236" y="1434" width="520" height="132" rx="14" fill="none" stroke="#dc2626" stroke-width="1.6" stroke-dasharray="7 5"/>
+<rect x="1248" y="1422" width="339.2" height="24" rx="12" fill="#dc2626"/>
+<text x="1258" y="1438" font-size="11" font-weight="700" fill="#ffffff" text-anchor="start">NÃO IDENTIFICADO / INCOMPLETO NA APLICAÇÃO</text>
+<rect x="1252" y="1458" width="488" height="96" rx="9" fill="#fbe3e3" stroke="#dc2626" stroke-width="1.5"/>
+<text x="1264" y="1476" font-size="12" font-weight="700" fill="#0f172a" text-anchor="start">Lookup por EMAIL · uso de AuditLog · uso de authorize()/RBAC</text>
+<text x="1264" y="1491" font-size="12" font-weight="700" fill="#0f172a" text-anchor="start">nas rotas · chamada de /api/auth/refresh pelo frontend ·</text>
+<text x="1264" y="1506" font-size="12" font-weight="700" fill="#0f172a" text-anchor="start">configuração de deploy (Vercel) e /health sem consumidor</text>
+<text x="1264" y="1521" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">Sinalizado porque o código não implementa/usa esses fluxos; o restante do</text>
+<text x="1264" y="1534" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">diagrama reflete apenas o que existe no repositório.</text>
+<path d="M 472 246 L 530 246 L 530 300 L 540 300" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arw0)"/>
+<rect x="478" y="227" width="92.60000000000001" height="15" rx="4" fill="#ffffff" fill-opacity="0.96"/><text x="483" y="238" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">POST /api/auth</text>
+<path d="M 472 272 L 600 272 L 600 343 L 600 329" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linejoin="round" stroke-dasharray="6 5" marker-end="url(#arw1)"/>
+<rect x="478" y="253" width="80.80000000000001" height="15" rx="4" fill="#ffffff" fill-opacity="0.96"/><text x="483" y="264" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">token + user</text>
+<path d="M 472 470 L 540 470 L 540 541 L 540 541" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arw2)"/>
+<rect x="478" y="451" width="157.5" height="15" rx="4" fill="#ffffff" fill-opacity="0.96"/><text x="483" y="462" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">GET /api/lookup/:type/:id</text>
+<path d="M 472 618 L 518 618 L 518 1228 L 730 1228 L 730 1216" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arw3)"/>
+<rect x="478" y="599" width="151.60000000000002" height="15" rx="4" fill="#ffffff" fill-opacity="0.96"/><text x="483" y="610" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">watchlist (mesmo Bearer)</text>
+<path d="M 580 1216 L 580 1242 L 508 1242 L 508 729 L 472 729" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linejoin="round" stroke-dasharray="6 5" marker-end="url(#arw4)"/>
+<rect x="478" y="710" width="104.4" height="15" rx="4" fill="#ffffff" fill-opacity="0.96"/><text x="483" y="721" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">resultado / erro</text>
+<path d="M 560 204 L 560 234" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arw5)"/>
+<path d="M 560 329 L 560 359" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arw6)"/>
+<path d="M 560 441 L 560 471" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arw7)"/>
+<path d="M 560 579 L 560 609" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arw8)"/>
+<rect x="568" y="577" width="45.400000000000006" height="15" rx="4" fill="#ffffff" fill-opacity="0.96"/><text x="573" y="588" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">válido</text>
+<path d="M 560 648 L 560 678" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arw9)"/>
+<path d="M 1188 734 L 1188 764" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arw10)"/>
+<rect x="1092" y="744" width="63.1" height="15" rx="4" fill="#ffffff" fill-opacity="0.96"/><text x="1097" y="755" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">cache HIT</text>
+<path d="M 1188 833 L 1188 1048" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linejoin="round" stroke-dasharray="6 5" marker-end="url(#arw11)"/>
+<path d="M 600 734 L 600 863" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arw12)"/>
+<rect x="608" y="741" width="104.4" height="15" rx="4" fill="#ffffff" fill-opacity="0.96"/><text x="613" y="752" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">MISS ou expirado</text>
+<path d="M 600 932 L 600 962" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arw13)"/>
+<path d="M 600 1018 L 600 1048" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arw14)"/>
+<rect x="608" y="1026" width="157.5" height="15" rx="4" fill="#ffffff" fill-opacity="0.96"/><text x="613" y="1037" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">score null → não persiste</text>
+<path d="M 640 441 L 640 471" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-linejoin="round" stroke-dasharray="6 5" marker-end="url(#arw15)"/>
+<path d="M 1204 250 L 1212 250 L 1212 249 L 1280 249" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arw16)"/>
+<rect x="1210" y="242.5" width="122.10000000000001" height="15" rx="4" fill="#ffffff" fill-opacity="0.96"/><text x="1215" y="253.5" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">findUnique + bcrypt</text>
+<path d="M 1280 242 L 1222 242 L 1222 268 L 1204 268" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linejoin="round" stroke-dasharray="6 5" marker-end="url(#arw17)"/>
+<path d="M 1204 694 L 1212 694 L 1212 453.5 L 1280 453.5" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arw18)"/>
+<rect x="1210" y="566.75" width="104.4" height="15" rx="4" fill="#ffffff" fill-opacity="0.96"/><text x="1215" y="577.75" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">findUnique cache</text>
+<path d="M 1280 436 L 1234 436 L 1234 718 L 1204 718" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linejoin="round" stroke-dasharray="6 5" marker-end="url(#arw19)"/>
+<path d="M 1204 885 L 1272 885 L 1272 453.5 L 1280 453.5" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linejoin="round" stroke-dasharray="6 5" marker-end="url(#arw20)"/>
+<rect x="1210" y="662.25" width="133.9" height="15" rx="4" fill="#ffffff" fill-opacity="0.96"/><text x="1215" y="673.25" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">upsert (score ≠ null)</text>
+<path d="M 1204 1150 L 1212 1150 L 1212 348 L 1280 348" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arw21)"/>
+<rect x="1210" y="742" width="163.4" height="15" rx="4" fill="#ffffff" fill-opacity="0.96"/><text x="1215" y="753" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">findMany / create / delete</text>
+<path d="M 1134 1084 L 1134 1278" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linejoin="round" marker-end="url(#arw22)"/>
+<rect x="1016" y="1103" width="86.7" height="15" rx="4" fill="#ffffff" fill-opacity="0.96"/><text x="1021" y="1114" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">HTTPS + chave</text>
+<path d="M 1156 1276 L 1156 1090" fill="none" stroke="#db2777" stroke-width="1.8" stroke-linejoin="round" stroke-dasharray="6 5" marker-end="url(#arw23)"/>
+<rect x="1164" y="1111" width="86.7" height="15" rx="4" fill="#ffffff" fill-opacity="0.96"/><text x="1169" y="1122" font-size="10" font-weight="400" fill="#4b5563" text-anchor="start">JSON validado</text>
+<text x="24" y="1588" font-size="10.5" font-weight="400" fill="#4b5563" text-anchor="start">Baseado exclusivamente em README.md, SPEC/ e src/ (server.ts, app.ts, módulos do backend, lib/ do frontend e prisma/). Diagrama de estudo; não altera a aplicação.</text>
+</svg>
