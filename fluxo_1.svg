@@ -1,0 +1,254 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="3320" viewBox="0 0 1240 3320" role="img" aria-labelledby="t d" font-family="Inter, 'Segoe UI', system-ui, -apple-system, sans-serif">
+<title id="t">KapiTrace — fluxo passo a passo para iniciantes</title>
+<desc id="d">15 etapas numeradas: usuário digita indicador, frontend envia com token, backend valida, checa cache, consulta sete APIs, calcula ThreatScore, grava no banco, devolve JSON e a tela exibe o resultado. Inclui caminhos 401, 400, 429, 503 e ausência de score.</desc>
+<defs><marker id="a-undefined" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="a-undefined" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/></marker><marker id="a-undefined" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="a-undefined" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="a-undefined" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/></marker><marker id="a-undefined" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="a-undefined" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker><marker id="a-undefined" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="a-undefined" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#dc2626"/></marker><marker id="a-undefined" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="a-undefined" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker></defs>
+<rect width="100%" height="100%" fill="#f7f9fc"/>
+<rect x="0" y="0" width="1240" height="112" fill="#0f172a"/>
+<text x="36" y="46" font-size="27" font-weight="800" fill="#ffffff" text-anchor="start">Como o KapiTrace funciona — passo a passo</text>
+<text x="36" y="74" font-size="12.5" font-weight="400" fill="#cbd5e1" text-anchor="start">Da pergunta do analista ("este IP é perigoso?") até o número de risco na tela. Cada quadrado numerado é uma etapa que o programa executa de fato.</text>
+<rect x="36" y="91" width="12" height="12" rx="3" fill="#64748b"/>
+<text x="54" y="101" font-size="10.5" font-weight="400" fill="#e2e8f0" text-anchor="start">Você (navegador)</text>
+<rect x="204" y="91" width="12" height="12" rx="3" fill="#2563eb"/>
+<text x="222" y="101" font-size="10.5" font-weight="400" fill="#e2e8f0" text-anchor="start">Tela / Frontend</text>
+<rect x="372" y="91" width="12" height="12" rx="3" fill="#059669"/>
+<text x="390" y="101" font-size="10.5" font-weight="400" fill="#e2e8f0" text-anchor="start">Servidor / Backend</text>
+<rect x="540" y="91" width="12" height="12" rx="3" fill="#db2777"/>
+<text x="558" y="101" font-size="10.5" font-weight="400" fill="#e2e8f0" text-anchor="start">APIs externas</text>
+<rect x="708" y="91" width="12" height="12" rx="3" fill="#d97706"/>
+<text x="726" y="101" font-size="10.5" font-weight="400" fill="#e2e8f0" text-anchor="start">Banco de dados</text>
+<rect x="876" y="91" width="12" height="12" rx="3" fill="#dc2626"/>
+<text x="894" y="101" font-size="10.5" font-weight="400" fill="#e2e8f0" text-anchor="start">Erro / sem dados</text>
+<rect x="1044" y="91" width="12" height="12" rx="3" fill="#0f766e"/>
+<text x="1062" y="101" font-size="10.5" font-weight="400" fill="#e2e8f0" text-anchor="start">Resposta ao usuário</text>
+<rect x="36" y="3158" width="1168" height="122" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.6"/>
+<text x="56" y="3186" font-size="13" font-weight="800" fill="#0f172a" text-anchor="start">Glossário rápido</text>
+<text x="56" y="3208" font-size="10.5" font-weight="700" fill="#475569" text-anchor="start">Indicador (IOC):</text>
+<text x="196" y="3208" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">o que você quer avaliar: um IP, domínio ou hash.</text>
+<text x="56" y="3223" font-size="10.5" font-weight="700" fill="#475569" text-anchor="start">ThreatScore:</text>
+<text x="196" y="3223" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">número de 0 a 100 que resume o risco encontrado.</text>
+<text x="56" y="3238" font-size="10.5" font-weight="700" fill="#475569" text-anchor="start">Cache:</text>
+<text x="196" y="3238" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">resposta antiga guardada para responder mais rápido e gastar menos.</text>
+<text x="56" y="3253" font-size="10.5" font-weight="700" fill="#475569" text-anchor="start">Bearer token:</text>
+<text x="196" y="3253" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">credencial que o login entrega e o navegador envia em cada pedido.</text>
+<text x="56" y="3268" font-size="10.5" font-weight="700" fill="#475569" text-anchor="start">Fonte / provedor:</text>
+<text x="196" y="3268" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">cada API externa que fornece evidências sobre o indicador.</text>
+<text x="36" y="3304" font-size="10.5" font-weight="400" fill="#64748b" text-anchor="start" font-style="italic">Baseado apenas no código de src/backend, src/frontend e prisma/. Valores citados (24 h, 5 min, 48 h, 30/min, pesos) são os padrões do código.</text>
+<rect x="420" y="150" width="380" height="142" rx="10" fill="#eef1f6" stroke="#64748b" stroke-width="1.8"/>
+<circle cx="442" cy="172" r="13" fill="#64748b"/>
+<text x="442" y="177" font-size="12.5" font-weight="800" fill="#ffffff" text-anchor="middle">1</text>
+<text x="464" y="177" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">Você digita um indicador na tela de</text>
+<text x="464" y="194" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">busca</text>
+<text x="464" y="213" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Página: src/frontend/src/app/lookup/page.tsx</text>
+<text x="464" y="227" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Escolhe o tipo (IP, domínio ou hash) e preenche,</text>
+<text x="464" y="241" font-size="11" font-weight="400" fill="#475569" text-anchor="start">por exemplo, 8.8.8.8</text>
+<text x="464" y="255" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Essa página só aparece se você está logado</text>
+<text x="464" y="269" font-size="11" font-weight="400" fill="#475569" text-anchor="start">(RequireSession).</text>
+<rect x="324" y="163" width="88" height="18" rx="9" fill="#64748b"/>
+<text x="368" y="176" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">VOCÊ</text>
+<rect x="420" y="348" width="380" height="125" rx="10" fill="#e6effd" stroke="#2563eb" stroke-width="1.8"/>
+<circle cx="442" cy="370" r="13" fill="#2563eb"/>
+<text x="442" y="375" font-size="12.5" font-weight="800" fill="#ffffff" text-anchor="middle">2</text>
+<text x="464" y="375" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">O navegador monta a requisição HTTP</text>
+<text x="464" y="394" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Arquivo: src/frontend/src/lib/api.ts</text>
+<text x="464" y="408" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Adiciona o cabeçalho: Authorization: Bearer</text>
+<text x="464" y="422" font-size="11" font-weight="400" fill="#475569" text-anchor="start">&lt;token&gt;</text>
+<text x="464" y="436" font-size="11" font-weight="400" fill="#475569" text-anchor="start">O token do login fica apenas na memória da aba</text>
+<text x="464" y="450" font-size="11" font-weight="400" fill="#475569" text-anchor="start">(lib/session.ts).</text>
+<rect x="324" y="361" width="88" height="18" rx="9" fill="#2563eb"/>
+<text x="368" y="374" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">TELA/FE</text>
+<path d="M 450 474 L 450 520" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linejoin="round" marker-end="url(#a-undefined)"/>
+<rect x="451.94000000000005" y="493.5" width="189.32" height="15" rx="4" fill="#ffffff" fill-opacity="0.97"/><text x="546.6" y="503.5" font-size="11" font-weight="700" fill="#475569" text-anchor="middle">GET /api/lookup/ip/8.8.8.8</text>
+<rect x="420" y="529" width="380" height="125" rx="10" fill="#e3f7ec" stroke="#059669" stroke-width="1.8"/>
+<circle cx="442" cy="551" r="13" fill="#059669"/>
+<text x="442" y="556" font-size="12.5" font-weight="800" fill="#ffffff" text-anchor="middle">3</text>
+<text x="464" y="556" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">O servidor confere se você pode entrar</text>
+<text x="464" y="575" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Arquivo: src/backend/src/middleware/auth.ts</text>
+<text x="464" y="589" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Valida a assinatura do token, o emissor</text>
+<text x="464" y="603" font-size="11" font-weight="400" fill="#475569" text-anchor="start">(kapitrace), a audiência</text>
+<text x="464" y="617" font-size="11" font-weight="400" fill="#475569" text-anchor="start">(kapitrace-web) e se ainda não expirou (validade</text>
+<text x="464" y="631" font-size="11" font-weight="400" fill="#475569" text-anchor="start">de até 24h).</text>
+<rect x="324" y="542" width="88" height="18" rx="9" fill="#059669"/>
+<text x="368" y="555" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">SERVIDOR</text>
+<rect x="420" y="742" width="380" height="64" rx="10" fill="#ffffff" stroke="#059669" stroke-width="1.8" stroke-dasharray="6 4"/>
+<text x="440" y="768" font-size="13.5" font-weight="800" fill="#0f172a" text-anchor="start">4. Token é válido?</text>
+<text x="440" y="787" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Não aparece, inválido ou expirado: resposta HTTP 401</text>
+<path d="M 450 895 L 450 885" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linejoin="round" marker-end="url(#a-undefined)"/>
+<rect x="459.07" y="886.5" width="32.46" height="15" rx="4" fill="#ffffff" fill-opacity="0.97"/><text x="475.3" y="896.5" font-size="11" font-weight="700" fill="#475569" text-anchor="middle">sim</text>
+<rect x="420" y="894" width="380" height="128" rx="10" fill="#e3f7ec" stroke="#059669" stroke-width="1.8"/>
+<circle cx="442" cy="916" r="13" fill="#059669"/>
+<text x="442" y="921" font-size="12.5" font-weight="800" fill="#ffffff" text-anchor="middle">5</text>
+<text x="464" y="921" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">O servidor limita quantas consultas</text>
+<text x="464" y="938" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">você faz</text>
+<text x="464" y="957" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Arquivo:</text>
+<text x="464" y="971" font-size="11" font-weight="400" fill="#475569" text-anchor="start">src/backend/src/middleware/lookup-limit.ts</text>
+<text x="464" y="985" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Máximo de 30 consultas por minuto por IP. Se</text>
+<text x="464" y="999" font-size="11" font-weight="400" fill="#475569" text-anchor="start">passar, resposta 429.</text>
+<rect x="324" y="907" width="88" height="18" rx="9" fill="#059669"/>
+<text x="368" y="920" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">SERVIDOR</text>
+<path d="M 450 1023 L 450 1069" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linejoin="round" marker-end="url(#a-undefined)"/>
+<rect x="455.04" y="1042.5" width="121.12" height="15" rx="4" fill="#ffffff" fill-opacity="0.97"/><text x="515.6" y="1052.5" font-size="11" font-weight="700" fill="#475569" text-anchor="middle">dentro do limite</text>
+<rect x="420" y="1078" width="380" height="139" rx="10" fill="#e3f7ec" stroke="#059669" stroke-width="1.8"/>
+<circle cx="442" cy="1100" r="13" fill="#059669"/>
+<text x="442" y="1105" font-size="12.5" font-weight="800" fill="#ffffff" text-anchor="middle">6</text>
+<text x="464" y="1105" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">A entrada é validada e padronizada</text>
+<text x="464" y="1124" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Arquivo: lookup.controller.ts →</text>
+<text x="464" y="1138" font-size="11" font-weight="400" fill="#475569" text-anchor="start">normalizeIndicator() em validators.ts</text>
+<text x="464" y="1152" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Aceita IPv4/IPv6 públicos, domínio válido e</text>
+<text x="464" y="1166" font-size="11" font-weight="400" fill="#475569" text-anchor="start">MD5/SHA-1/SHA-256.</text>
+<text x="464" y="1180" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Recusa IP privado/reservado, por exemplo</text>
+<text x="464" y="1194" font-size="11" font-weight="400" fill="#475569" text-anchor="start">192.168.x.x.</text>
+<rect x="324" y="1091" width="88" height="18" rx="9" fill="#059669"/>
+<text x="368" y="1104" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">SERVIDOR</text>
+<rect x="420" y="1305" width="380" height="64" rx="10" fill="#ffffff" stroke="#059669" stroke-width="1.8" stroke-dasharray="6 4"/>
+<text x="440" y="1331" font-size="13.5" font-weight="800" fill="#0f172a" text-anchor="start">7. O indicador é válido?</text>
+<text x="440" y="1350" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Texto malformado ou tipo errado: resposta HTTP 400</text>
+<path d="M 450 1458 L 450 1448" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linejoin="round" marker-end="url(#a-undefined)"/>
+<rect x="459.07" y="1449.5" width="32.46" height="15" rx="4" fill="#ffffff" fill-opacity="0.97"/><text x="475.3" y="1459.5" font-size="11" font-weight="700" fill="#475569" text-anchor="middle">sim</text>
+<rect x="420" y="1457" width="380" height="128" rx="10" fill="#e3f7ec" stroke="#059669" stroke-width="1.8"/>
+<circle cx="442" cy="1479" r="13" fill="#059669"/>
+<text x="442" y="1484" font-size="12.5" font-weight="800" fill="#ffffff" text-anchor="middle">8</text>
+<text x="464" y="1484" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">Antes de consultar a internet, olha o</text>
+<text x="464" y="1501" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">cache</text>
+<text x="464" y="1520" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Arquivo: lookup.controller.ts → performLookup() +</text>
+<text x="464" y="1534" font-size="11" font-weight="400" fill="#475569" text-anchor="start">readCache()</text>
+<text x="464" y="1548" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Cache = respostas que já foram obtidas antes e</text>
+<text x="464" y="1562" font-size="11" font-weight="400" fill="#475569" text-anchor="start">estão salvas no banco.</text>
+<rect x="324" y="1470" width="88" height="18" rx="9" fill="#059669"/>
+<text x="368" y="1483" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">SERVIDOR</text>
+<rect x="420" y="1673" width="380" height="64" rx="10" fill="#ffffff" stroke="#d97706" stroke-width="1.8" stroke-dasharray="6 4"/>
+<text x="440" y="1699" font-size="13.5" font-weight="800" fill="#0f172a" text-anchor="start">9. Existe resultado salvo e ainda dentro do prazo?</text>
+<text x="440" y="1718" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Prazo: 24 h para resultado completo e 5 min para parcial.</text>
+<path d="M 450 1826 L 450 1816" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linejoin="round" marker-end="url(#a-undefined)"/>
+<rect x="447.90999999999997" y="1817.5" width="277.98" height="15" rx="4" fill="#ffffff" fill-opacity="0.97"/><text x="586.9" y="1827.5" font-size="11" font-weight="700" fill="#475569" text-anchor="middle">não (primeira consulta ou cache venceu)</text>
+<rect x="420" y="1825" width="380" height="156" rx="10" fill="#fde7ef" stroke="#db2777" stroke-width="1.8"/>
+<circle cx="442" cy="1847" r="13" fill="#db2777"/>
+<text x="442" y="1852" font-size="12.5" font-weight="800" fill="#ffffff" text-anchor="middle">10</text>
+<text x="464" y="1852" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">O servidor pergunta para 7 serviços de</text>
+<text x="464" y="1869" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">segurança</text>
+<text x="464" y="1888" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Arquivos: intelligence.service.ts +</text>
+<text x="464" y="1902" font-size="11" font-weight="400" fill="#475569" text-anchor="start">intelligence/http.ts</text>
+<text x="464" y="1916" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Ex.: AbuseIPDB, VirusTotal, Shodan, GreyNoise,</text>
+<text x="464" y="1930" font-size="11" font-weight="400" fill="#475569" text-anchor="start">OTX, URLScan e IPInfo.</text>
+<text x="464" y="1944" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Cada serviço tem no máximo 5 s e o conjunto todo</text>
+<text x="464" y="1958" font-size="11" font-weight="400" fill="#475569" text-anchor="start">no máximo 10 s.</text>
+<rect x="324" y="1838" width="88" height="18" rx="9" fill="#db2777"/>
+<text x="368" y="1851" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">APIs EXTERNAS</text>
+<rect x="420" y="2037" width="380" height="156" rx="10" fill="#e3f7ec" stroke="#059669" stroke-width="1.8"/>
+<circle cx="442" cy="2059" r="13" fill="#059669"/>
+<text x="442" y="2064" font-size="12.5" font-weight="800" fill="#ffffff" text-anchor="middle">11</text>
+<text x="464" y="2064" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">O servidor transforma as respostas em</text>
+<text x="464" y="2081" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">um número</text>
+<text x="464" y="2100" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Arquivo: threat-score.service.ts →</text>
+<text x="464" y="2114" font-size="11" font-weight="400" fill="#475569" text-anchor="start">calculate_threat_score()</text>
+<text x="464" y="2128" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Soma ponderada dos indicadores disponíveis e</text>
+<text x="464" y="2142" font-size="11" font-weight="400" fill="#475569" text-anchor="start">limita o resultado entre 0 e 100.</text>
+<text x="464" y="2156" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Se nenhuma métrica útil chegou, o resultado é</text>
+<text x="464" y="2170" font-size="11" font-weight="400" fill="#475569" text-anchor="start">nulo (não é zero).</text>
+<rect x="324" y="2050" width="88" height="18" rx="9" fill="#059669"/>
+<text x="368" y="2063" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">SERVIDOR</text>
+<rect x="420" y="2281" width="380" height="80" rx="10" fill="#ffffff" stroke="#059669" stroke-width="1.8" stroke-dasharray="6 4"/>
+<text x="440" y="2307" font-size="13.5" font-weight="800" fill="#0f172a" text-anchor="start">12. Deu para calcular um score?</text>
+<text x="440" y="2326" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Não: pode usar cache antigo (≤ 48 h) como "stale";</text>
+<text x="440" y="2342" font-size="11" font-weight="400" fill="#475569" text-anchor="start">se não houver cache nem fonte acessível → 503.</text>
+<path d="M 450 2450 L 450 2440" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linejoin="round" marker-end="url(#a-undefined)"/>
+<rect x="453.18000000000006" y="2441.5" width="162.04" height="15" rx="4" fill="#ffffff" fill-opacity="0.97"/><text x="534.2" y="2451.5" font-size="11" font-weight="700" fill="#475569" text-anchor="middle">sim (ou veio do cache)</text>
+<rect x="420" y="2449" width="380" height="125" rx="10" fill="#fdf2df" stroke="#d97706" stroke-width="1.8"/>
+<circle cx="442" cy="2471" r="13" fill="#d97706"/>
+<text x="442" y="2476" font-size="12.5" font-weight="800" fill="#ffffff" text-anchor="middle">13</text>
+<text x="464" y="2476" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">O resultado é salvo no banco de dados</text>
+<text x="464" y="2495" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Tabelas: IpCache, DomainCache ou HashCache</text>
+<text x="464" y="2509" font-size="11" font-weight="400" fill="#475569" text-anchor="start">(Prisma/PostgreSQL)</text>
+<text x="464" y="2523" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Só grava quando há score; a próxima consulta ao</text>
+<text x="464" y="2537" font-size="11" font-weight="400" fill="#475569" text-anchor="start">mesmo indicador</text>
+<text x="464" y="2551" font-size="11" font-weight="400" fill="#475569" text-anchor="start">vai direto ao cache e fica mais rápida.</text>
+<rect x="324" y="2462" width="88" height="18" rx="9" fill="#d97706"/>
+<text x="368" y="2475" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">BANCO</text>
+<rect x="420" y="2686" width="380" height="111" rx="10" fill="#e3f7ec" stroke="#059669" stroke-width="1.8"/>
+<circle cx="442" cy="2708" r="13" fill="#059669"/>
+<text x="442" y="2713" font-size="12.5" font-weight="800" fill="#ffffff" text-anchor="middle">14</text>
+<text x="464" y="2713" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">O servidor devolve uma resposta JSON</text>
+<text x="464" y="2732" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Campos principais: threatScore, riskLevel,</text>
+<text x="464" y="2746" font-size="11" font-weight="400" fill="#475569" text-anchor="start">sources[] e a origem</text>
+<text x="464" y="2760" font-size="11" font-weight="400" fill="#475569" text-anchor="start">"api" (consultou agora) ou "cache" (resposta</text>
+<text x="464" y="2774" font-size="11" font-weight="400" fill="#475569" text-anchor="start">guardada).</text>
+<rect x="324" y="2699" width="88" height="18" rx="9" fill="#059669"/>
+<text x="368" y="2712" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">SERVIDOR</text>
+<path d="M 450 2798 L 450 2844" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linejoin="round" marker-end="url(#a-undefined)"/>
+<rect x="457.52" y="2817.5" width="66.56" height="15" rx="4" fill="#ffffff" fill-opacity="0.97"/><text x="490.8" y="2827.5" font-size="11" font-weight="700" fill="#475569" text-anchor="middle">HTTP 200</text>
+<rect x="420" y="2853" width="380" height="139" rx="10" fill="#dff5f1" stroke="#0f766e" stroke-width="1.8"/>
+<circle cx="442" cy="2875" r="13" fill="#0f766e"/>
+<text x="442" y="2880" font-size="12.5" font-weight="800" fill="#ffffff" text-anchor="middle">15</text>
+<text x="464" y="2880" font-size="14" font-weight="800" fill="#0f172a" text-anchor="start">A tela mostra o resultado</text>
+<text x="464" y="2899" font-size="11" font-weight="400" fill="#475569" text-anchor="start">lookup/page.tsx exibe o ThreatScore, o nível de</text>
+<text x="464" y="2913" font-size="11" font-weight="400" fill="#475569" text-anchor="start">risco, a cobertura</text>
+<text x="464" y="2927" font-size="11" font-weight="400" fill="#475569" text-anchor="start">de evidências e o status de cada serviço</text>
+<text x="464" y="2941" font-size="11" font-weight="400" fill="#475569" text-anchor="start">consultado.</text>
+<text x="464" y="2955" font-size="11" font-weight="400" fill="#475569" text-anchor="start">Se o score for nulo, mostra "Sem pontuação" /</text>
+<text x="464" y="2969" font-size="11" font-weight="400" fill="#475569" text-anchor="start">"Dados insuficientes".</text>
+<rect x="324" y="2866" width="88" height="18" rx="9" fill="#0f766e"/>
+<text x="368" y="2879" font-size="10" font-weight="700" fill="#ffffff" text-anchor="middle">RESULTADO</text>
+<rect x="420" y="3026" width="380" height="76" rx="38" fill="#dff5f1" stroke="#0f766e" stroke-width="1.8"/>
+<text x="610" y="3060" font-size="13" font-weight="800" fill="#0f172a" text-anchor="middle">Fim: você recebe o score na tela</text>
+<text x="610" y="3076" font-size="10.5" font-weight="400" fill="#475569" text-anchor="middle">A mesma resposta também pode ser adicionada à Watchlist</text>
+<path d="M 800 774 L 822 774" fill="none" stroke="#dc2626" stroke-width="2" stroke-linejoin="round" marker-end="url(#a-undefined)"/>
+<rect x="778.31" y="758" width="73.38" height="15" rx="4" fill="#ffffff" fill-opacity="0.97"/><text x="815" y="768" font-size="11" font-weight="700" fill="#dc2626" text-anchor="middle">não · 401</text>
+<path d="M 800 1337 L 822 1337" fill="none" stroke="#dc2626" stroke-width="2" stroke-linejoin="round" marker-end="url(#a-undefined)"/>
+<rect x="778.31" y="1321" width="73.38" height="15" rx="4" fill="#ffffff" fill-opacity="0.97"/><text x="815" y="1331" font-size="11" font-weight="700" fill="#dc2626" text-anchor="middle">não · 400</text>
+<path d="M 800 1705 L 822 1705" fill="none" stroke="#d97706" stroke-width="2" stroke-linejoin="round" marker-end="url(#a-undefined)"/>
+<rect x="771.49" y="1689" width="87.02" height="15" rx="4" fill="#ffffff" fill-opacity="0.97"/><text x="815" y="1699" font-size="11" font-weight="700" fill="#d97706" text-anchor="middle">sim · cache</text>
+<path d="M 800 2321 L 822 2321" fill="none" stroke="#dc2626" stroke-width="2" stroke-linejoin="round" marker-end="url(#a-undefined)"/>
+<rect x="730.57" y="2305" width="168.85999999999999" height="15" rx="4" fill="#ffffff" fill-opacity="0.97"/><text x="815" y="2315" font-size="11" font-weight="700" fill="#dc2626" text-anchor="middle">segue por outro caminho</text>
+rect x="830" y="150" w="380" h="96"
+<rect x="830" y="1825" width="380" height="132" rx="10" fill="#fde7ef" stroke="#db2777" stroke-width="1.8"/>
+<text x="846" y="1851" font-size="13" font-weight="800" fill="#0f172a" text-anchor="start">O que acontece em paralelo</text>
+<text x="846" y="1873" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">• IP → 6 fontes · domínio → 3 · hash → 2</text>
+<text x="846" y="1890" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">• Sem chave configurada → not_configured</text>
+<text x="846" y="1907" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">• Tempo esgotado → timeout · limite → rate_limited</text>
+<text x="846" y="1924" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">• 404 → not_found · 429/503 → espera (cooldown)</text>
+<rect x="830" y="150" width="380" height="118" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="846" y="176" font-size="13" font-weight="800" fill="#0f172a" text-anchor="start">Exemplo concreto usado no desenho</text>
+<rect x="846" y="190" width="150" height="30" rx="6" fill="#f1f5f9"/>
+<text x="854" y="210" font-size="13" font-weight="700" fill="#0f172a" text-anchor="start">8.8.8.8</text>
+<text x="1004" y="210" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">← IP público (tipo "ip")</text>
+<text x="846" y="240" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">Outros tipos: example.com (domínio) e um hash MD5/SHA-1/SHA-256.</text>
+<text x="846" y="256" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">O e-mail está previsto no projeto, mas ainda não é consultado.</text>
+<rect x="830" y="535" width="380" height="50" rx="10" fill="#fbe4e4" stroke="#dc2626" stroke-width="1.6"/>
+<text x="846" y="557" font-size="12.5" font-weight="800" fill="#dc2626" text-anchor="start">401 — não autenticado</text>
+<text x="846" y="573" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">A tela apaga a sessão e pede login de novo.</text>
+<rect x="830" y="900" width="380" height="50" rx="10" fill="#fbe4e4" stroke="#dc2626" stroke-width="1.6"/>
+<text x="846" y="922" font-size="12.5" font-weight="800" fill="#dc2626" text-anchor="start">429 — consultas demais</text>
+<text x="846" y="938" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">O servidor pede espera e envia o cabeçalho Retry-After.</text>
+<rect x="830" y="1084" width="380" height="50" rx="10" fill="#fbe4e4" stroke="#dc2626" stroke-width="1.6"/>
+<text x="846" y="1106" font-size="12.5" font-weight="800" fill="#dc2626" text-anchor="start">400 — pedido inválido</text>
+<text x="846" y="1122" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">Retorna antes de ler cache ou chamar qualquer serviço.</text>
+<rect x="830" y="1463" width="380" height="86" rx="10" fill="#fdf2df" stroke="#d97706" stroke-width="1.6"/>
+<text x="846" y="1485" font-size="12.5" font-weight="800" fill="#d97706" text-anchor="start">Onde ficam os dados (PostgreSQL)</text>
+<text x="846" y="1505" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">• User e Watchlist (contas e itens monitorados)</text>
+<text x="846" y="1521" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">• IpCache / DomainCache / HashCache (resultados)</text>
+<text x="846" y="1537" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">• Acesso: backend → Prisma → banco</text>
+<rect x="830" y="1717" width="380" height="74" rx="10" fill="#fdf2df" stroke="#d97706" stroke-width="1.6"/>
+<text x="846" y="1739" font-size="12.5" font-weight="800" fill="#d97706" text-anchor="start">Atalho do cache (source: "cache")</text>
+<text x="846" y="1757" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">Se o resultado ainda está no prazo, o servidor</text>
+<text x="846" y="1773" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">pula as etapas 10 e 11 e vai para a 14.</text>
+<rect x="830" y="2043" width="380" height="106" rx="10" fill="#e3f7ec" stroke="#059669" stroke-width="1.6"/>
+<text x="846" y="2065" font-size="12.5" font-weight="800" fill="#059669" text-anchor="start">Como o número é montado</text>
+<text x="846" y="2085" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">• Pesos: abuso 35% · detecções 40%</text>
+<text x="846" y="2102" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">• vulnerabilidades 15% · atividade suspeita 10%</text>
+<text x="846" y="2119" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">• Só as métricas disponíveis entram na conta.</text>
+<text x="846" y="2136" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">• Resultado: LOW · SUSPICIOUS · HIGH · CRITICAL</text>
+<rect x="830" y="2339" width="380" height="96" rx="10" fill="#fbe4e4" stroke="#dc2626" stroke-width="1.6"/>
+<text x="846" y="2361" font-size="12.5" font-weight="800" fill="#dc2626" text-anchor="start">Quando falta informação</text>
+<text x="846" y="2379" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">Score nulo → a tela mostra "Sem pontuação".</text>
+<text x="846" y="2395" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">Cache antigo (até 48 h) → marcado como "stale".</text>
+<text x="846" y="2411" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">Nada acessível → 503 (serviço indisponível).</text>
+<rect x="830" y="2449" width="380" height="86" rx="10" fill="#e6effd" stroke="#2563eb" stroke-width="1.6"/>
+<text x="846" y="2473" font-size="12.5" font-weight="800" fill="#2563eb" text-anchor="start">Extra: botão "Adicionar à Watchlist"</text>
+<text x="846" y="2491" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">Chama POST /api/watchlist com o mesmo token.</text>
+<text x="846" y="2507" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">Grava userId + indicador na tabela Watchlist</text>
+<text x="846" y="2523" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">e a lista aparece em /dashboard.</text>
+<rect x="830" y="2853" width="380" height="104" rx="10" fill="#dff5f1" stroke="#0f766e" stroke-width="1.6"/>
+<text x="846" y="2877" font-size="12.5" font-weight="800" fill="#0f766e" text-anchor="start">Se der erro na tela</text>
+<text x="846" y="2895" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">401 → limpa a sessão e volta para /login.</text>
+<text x="846" y="2911" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">Rede/JSON inválido/429/5xx → mostra o erro,</text>
+<text x="846" y="2927" font-size="10.5" font-weight="400" fill="#475569" text-anchor="start">mas mantém a sessão; recarregar pede login.</text>
+</svg>
