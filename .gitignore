@@ -40,3 +40,4 @@ coverage/
 # Arquivos de planejamento local
 plano_ap1_ciberseguranca.md
 TASKS.md
+.mcp.json
