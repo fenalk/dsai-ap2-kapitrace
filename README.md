@@ -1,5 +1,7 @@
 # 🛡️ KapiTrace — Threat Intelligence & IP Reputation
 
+> **Por que este repositório?** Escolhi o KapiTrace para aprofundar meus conhecimentos em cibersegurança, aprendendo na prática a coletar, normalizar e avaliar evidências de ameaças por meio de fontes reais de reputação de IPs, domínios e hashes.
+
 🔗 **Link**: https://dsai-ap1-kapitrace.vercel.app/
 
 > Plataforma de inteligência de ameaças e verificação de reputação de IPs, domínios e hashes. A integração de emails ainda não está disponível.
@@ -221,6 +223,30 @@ Os testes usam `node:test`/`node:assert`, PostgreSQL 16 real em container Docker
 | `npm run db:check` | Verifica conexão, tabelas, histórico Prisma, RLS e permissões |
 | `npm run db:studio` | `prisma studio`  |
 | `npm test`    | Executa suíte de testes unitários, integração e E2E |
+
+## 📊 Linhas de Código
+
+Contagem feita com [cloc](https://github.com/AlDanial/cloc) sobre os arquivos versionados no Git. **Não entram na contagem:** dependências (`node_modules/`), locks (`package-lock.json`, `migration_lock.toml`), saídas de build (`.next/`, `dist/`), dados e evidências geradas (`prompts/sessoes/*.log`/`*.txt`, `metrics/`), imagens (`.svg`, `.ico`) e documentação Markdown (contada à parte).
+
+| Linguagem     | Arquivos | Em branco | Comentários | Código    |
+| ------------- | -------: | --------: | ----------: | --------: |
+| TypeScript    | 50       | 327       | 181         | 3.382     |
+| CSS           | 2        | 193       | 56          | 1.158     |
+| JavaScript    | 5        | 2         | 8           | 240       |
+| JSON          | 5        | 0         | 0           | 147       |
+| SQL           | 3        | 18        | 17          | 104       |
+| Prisma Schema | 1        | 13        | 0           | 61        |
+| **Total**     | **66**   | **553**   | **262**     | **5.092** |
+
+| Área           | Linhas de código |
+| -------------- | ---------------: |
+| `src/frontend` | 1.868            |
+| `tests/`       | 1.503            |
+| `src/backend`  | 1.479            |
+| `scripts/`     | 226              |
+| `package.json` (raiz) | 16        |
+
+Documentação Markdown (README, SPECs, AGENTS e registros de sessão): 29 arquivos, 1.677 linhas.
 
 ## 🎨 Design System
 
