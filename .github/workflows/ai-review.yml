@@ -1,0 +1,86 @@
+# Revisão por IA (DeepSeek) e merge automatizado fail-closed
+# (SPEC/SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md, E2/E3).
+#
+# workflow_run executa ESTE arquivo e os scripts da branch padrão: um PR não altera
+# o revisor que o avalia. Nenhum job executa código do PR; o PR é lido como texto via API.
+# - review:  tem DEEPSEEK_API_KEY, sem permissão de escrita.
+# - publish: tem permissão de escrita, sem DEEPSEEK_API_KEY.
+# A saída do modelo trafega como dado (job output → variável de ambiente) e nunca é
+# interpolada em comandos shell.
+name: AI Review
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Número do PR a revisar novamente
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: ai-review-${{ github.event.workflow_run.head_branch || inputs.pr_number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.event == 'pull_request' &&
+       github.event.workflow_run.conclusion != 'cancelled' &&
+       github.event.workflow_run.path == '.github/workflows/ci.yml' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+      checks: read
+    outputs:
+      result: ${{ steps.review.outputs.result }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - id: review
+        run: node .github/scripts/ai-review/review.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_MODEL: ${{ vars.DEEPSEEK_MODEL }}
+          DEEPSEEK_BASE_URL: ${{ vars.DEEPSEEK_BASE_URL }}
+
+  publish:
+    needs: review
+    # Roda também quando review falha (veredito tratado como error); não roda se review foi
+    # pulado (fork, origem inválida) ou cancelado (concurrency).
+    if: always() && (needs.review.result == 'success' || needs.review.result == 'failure')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      checks: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - run: node .github/scripts/ai-review/publish.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          REVIEW_RESULT: ${{ needs.review.outputs.result }}
+          REVIEW_JOB_RESULT: ${{ needs.review.result }}

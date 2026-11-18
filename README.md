@@ -210,6 +210,32 @@ Integração/E2E exigem Docker em execução (imagem `postgres:16`) ou `TEST_DAT
 
 Os testes usam `node:test`/`node:assert`, PostgreSQL 16 real em container Docker temporário e um schema exclusivo por processo. O container publica somente em loopback, não usa volume e tem senha aleatória em memória. O runner aplica as mesmas migrations do deploy e remove somente os schemas/container criados para o teste. A interceptação nativa permanece somente na fronteira HTTP externa. Tráfego externo não interceptado é bloqueado nos testes. Chrome/Chromium instalado é necessário para E2E; `CHROME_BIN` aponta para seu executável. O runner CDP/WebSocket é próprio, sem Playwright/Selenium. O fluxo HTTP anterior foi preservado em `tests/integration/workflow.test.ts`. Testes de Lookup autenticam uma conta real pelo endpoint de login; o helper anônimo permanece disponível para provar 401. A suíte cobre JWT isolado, login, HIT/MISS autenticados e E2E com erros de credenciais/rede, Bearer, 401, logout e recarga. Na validação desta etapa, **85 testes passaram**, além dos builds de backend/frontend e lint.
 
+### CI, revisão por IA e merge automatizado
+
+Especificação: [SPEC de CI com code review por IA](SPEC/SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md).
+
+Todo PR para `main` roda o workflow **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)). Cada job é um check obrigatório: `secrets`, `unit`, `integration` (PostgreSQL 16 descartável no Docker do runner), `build-backend`, `frontend` (lint + build) e `e2e` (Chrome do runner). Esses jobs executam o código do PR com token somente leitura e sem secrets.
+
+Ao fim do CI, o workflow **AI Review** ([`.github/workflows/ai-review.yml`](.github/workflows/ai-review.yml)) roda a partir da branch `main` (o PR não altera o próprio revisor) e lê o PR apenas como texto pela API:
+
+1. `review` — confirma PR aberto, não-draft, da própria base e com todos os checks verdes no SHA atual; só então envia o diff ao DeepSeek com as regras fixas de [`.github/ai-review/prompt.md`](.github/ai-review/prompt.md). Tem `DEEPSEEK_API_KEY`, sem permissão de escrita.
+2. `publish` — sem a chave do DeepSeek: recoleta o estado, aplica a função pura `decide_merge`, atualiza **um único** comentário no PR e, se todos os critérios passarem, faz merge commit **do SHA revisado**.
+
+| Veredito | Significado |
+| --- | --- |
+| `approve` | IA sem findings `blocker`/`major` (condição necessária, não suficiente) |
+| `request_changes` | IA apontou problema; também quando o modelo aprova com finding `blocker`/`major` |
+| `needs_human` | exige julgamento humano; inclui diff acima de 100 arquivos / 120.000 bytes (IA não é chamada) |
+| `not_run` | pré-condição não atendida (check vermelho, draft, fork, head mudou): IA não é chamada |
+| `error` | DeepSeek indisponível, timeout, resposta fora do schema ou falha do job: nunca há merge |
+
+O merge automatizado também exige: autor com permissão `write`/`admin`, ausência da label `no-automerge`, trailers `Agent:`/`Spec:` em todos os commits quando o PR altera `src/**` ou `tests/**`, e nenhum caminho sensível (`.github/**`, `scripts/**`, `SPEC/**`, migrations/schema Prisma, `README.md`, `AGENTS.md`/`CLAUDE.md`, `.env*`, `package*.json`, diretórios de agentes, arquivos existentes em `prompts/sessoes/` e `metrics/`). Qualquer falha ou ambiguidade resulta em **não fazer merge**; os motivos ficam no comentário e no job summary.
+
+- **Bloquear:** adicione a label `no-automerge` ao PR.
+- **Reexecutar:** use *Re-run* no run do AI Review ou *Actions → AI Review → Run workflow* (a partir de `main`) informando o número do PR.
+- **Configuração (administração do repositório):** proteção de `main` com PR e os seis checks acima obrigatórios; `GITHUB_TOKEN` somente leitura por padrão; secret `DEEPSEEK_API_KEY`; variáveis opcionais `DEEPSEEK_MODEL` (padrão `deepseek-chat`) e `DEEPSEEK_BASE_URL` (padrão `https://api.deepseek.com`); label `no-automerge` criada.
+- Merges feitos pelo `GITHUB_TOKEN` não disparam novo CI no `push` em `main`; o SHA mesclado já passou pelo CI no PR.
+
 ### Scripts Disponíveis (Backend)
 | Script        | Comando                  |
 | ------------- | ------------------------ |
