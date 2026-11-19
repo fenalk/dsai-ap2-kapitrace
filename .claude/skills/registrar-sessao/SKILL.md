@@ -53,7 +53,9 @@ resultados de ferramentas e lembretes injetados pelo sistema (AGENTS.md §8).
 
 ## Restrições
 
-- Não faça commit. O usuário revisa e comita.
+- Não faça commit sem pedido do usuário. Quando ele pedir, siga a convenção do AGENTS.md §8:
+  branch `docs/sessao-<assunto>` a partir do `main` e PR própria. Nunca inclua o registro
+  numa PR de código.
 - Não edite registros que já existem em `prompts/sessoes/`, porque são históricos (AGENTS.md §9).
 - A mensagem que pede o registro e a confirmação final não entram no arquivo, pois ainda não
   estavam no transcript quando o script rodou. Isso é esperado.
