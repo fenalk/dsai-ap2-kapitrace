@@ -12,6 +12,12 @@ export function jwtSecret(): string {
   if (!secret || secret.length < 32) throw new Error('JWT_SECRET must contain at least 32 characters');
   return secret;
 }
+/** Environment variable holding each provider credential. */
+export const PROVIDER_KEYS = { ABUSEIPDB: 'ABUSEIPDB_API_KEY', VIRUSTOTAL: 'VIRUSTOTAL_API_KEY', SHODAN: 'SHODAN_API_KEY', GREYNOISE: 'GREYNOISE_API_KEY', OTX: 'OTX_API_KEY', URLSCAN: 'URLSCAN_API_KEY', IPINFO: 'IPINFO_TOKEN' } as const;
+/** Provider names with a non-empty credential; never returns values, lengths or prefixes. */
+export function configuredProviders(): string[] {
+  return Object.entries(PROVIDER_KEYS).filter(([, key]) => Boolean(process.env[key]?.trim())).map(([name]) => name);
+}
 export function validateConfig(): void {
   jwtSecret();
   databaseUrl();

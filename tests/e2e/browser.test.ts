@@ -9,7 +9,8 @@ import path from 'node:path';
 import { createServer } from 'node:net';
 import { setTimeout as delay } from 'node:timers/promises';
 import { startTestServer } from '../test-helper';
-import { calls } from '../http-fixtures';
+import { calls, responses, json } from '../http-fixtures';
+import { resetHttpState } from '../../src/backend/src/modules/intelligence/http';
 
 async function freePort(): Promise<number> {
   const server = createServer();
@@ -125,6 +126,10 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
     assert.equal(await evaluate(`document.querySelector('[data-testid="threat-score"]').textContent`), '75');
     assert.equal(await evaluate(`document.querySelector('[data-testid="lookup-source"]').textContent`), 'api');
     assert.equal(calls.length, 6);
+    const text = (selector: string) => evaluate(`document.querySelector(${JSON.stringify(selector)})?.textContent ?? ''`);
+    assert.match(await text('[data-testid="source-ABUSEIPDB"]'), /AbuseIPDB.*Consultada.*Confiança de abuso: 80%.*Denúncias \(90 dias\): 42.*País: US/);
+    assert.match(await text('[data-testid="source-VIRUSTOTAL"]'), /VirusTotal.*Consultada.*Detecções maliciosas: 8 de 10 motores/);
+    assert.match(await text('[data-testid="source-URLSCAN"]'), /Não aplicável/);
     await button('Analisar');
     await until(async () => await evaluate(`document.querySelector('[data-testid="lookup-source"]')?.textContent === 'cache'`));
     assert.equal(calls.length, 6);
@@ -135,19 +140,44 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
     await button('Remover');
     await until(async () => await evaluate(`document.body.textContent.includes('Nenhum indicador monitorado.')`));
     await clientNavigate('/lookup'); await waitForLookup(); await fill('[aria-label="Indicador"]', '999.1.2.3'); await button('Analisar');
-    await until(async () => await evaluate(`document.querySelector('[role="alert"]') !== null`));
+    await until(async () => await evaluate(`document.querySelector('[role="alert"]')?.textContent.startsWith('IP inválido')`));
     assert.equal(await evaluate(`document.querySelector('[data-testid="lookup-result"]')`), null);
+    await fill('[aria-label="Indicador"]', '10.0.0.1'); await button('Analisar');
+    await until(async () => await evaluate(`document.querySelector('[role="alert"]')?.textContent === 'Apenas IPs públicos podem ser consultados.'`));
     assert.equal(calls.length, 6);
+    // 503 paths: providers run in this process, so the test toggles server-side keys only.
+    const providerKeys = ['ABUSEIPDB_API_KEY', 'VIRUSTOTAL_API_KEY', 'SHODAN_API_KEY', 'GREYNOISE_API_KEY', 'OTX_API_KEY', 'URLSCAN_API_KEY', 'IPINFO_TOKEN'];
+    const savedKeys = Object.fromEntries(providerKeys.map(key => [key, process.env[key]]));
+    try {
+      for (const key of providerKeys) delete process.env[key];
+      await fill('[aria-label="Indicador"]', '1.1.1.1'); await button('Analisar');
+      await until(async () => await evaluate(`document.querySelector('[role="alert"]')?.textContent === 'Nenhuma fonte de inteligência está configurada no servidor. Contate o administrador.'`));
+      assert.match(await text('[data-testid="lookup-error"] [data-testid="source-VIRUSTOTAL"]'), /Não configurada/);
+      assert.equal(await evaluate(`document.querySelector('[data-testid="threat-score"]')`), null);
+      process.env.VIRUSTOTAL_API_KEY = 'test-only-key';
+      responses.set('www.virustotal.com', () => json({}, 429, { 'Retry-After': '120' }));
+      await evaluate(`(() => { const tab = [...document.querySelectorAll('button')].find(b => b.textContent === 'DOMAIN'); tab.click(); })()`);
+      await until(async () => await evaluate(`location.search === '?type=domain'`));
+      await fill('[aria-label="Indicador"]', 'limited.example.com'); await button('Analisar');
+      await until(async () => await evaluate(`document.querySelector('[role="alert"]')?.textContent === 'Limite de consultas do provedor atingido. Tente novamente em 120 s.'`));
+      assert.match(await text('[data-testid="lookup-error"] [data-testid="source-VIRUSTOTAL"]'), /Limite de consultas — tente em 120 s/);
+      assert.equal(calls.length, 7);
+    } finally {
+      responses.delete('www.virustotal.com'); resetHttpState();
+      for (const [key, value] of Object.entries(savedKeys)) if (value === undefined) delete process.env[key]; else process.env[key] = value;
+    }
+    const baseline = calls.length;
+    await button('IP'); await until(async () => await evaluate(`location.search === '?type=ip'`));
     assert.ok(lookupRequests.length >= 3 && lookupRequests.every(request => request.hasBearer), 'Every browser lookup must carry Bearer');
     assert.equal(await evaluate(`Object.keys(localStorage).some(key => /^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$/.test(localStorage.getItem(key) || ''))`), false);
     // Rotate only the runtime test secret to invalidate the current token.
     process.env.JWT_SECRET = randomBytes(48).toString('hex');
     await fill('[aria-label="Indicador"]', '8.8.8.8'); await button('Analisar'); await waitForLogin();
-    assert.equal(calls.length, 6);
+    assert.equal(calls.length, baseline);
     await fill('#email', email); await fill('#password', 'BrowserTestOnly-2026!'); await button('Entrar'); await waitForLookup();
     await send('Page.reload'); await waitForLogin();
     assert.equal(await evaluate(`document.querySelector('[data-testid="lookup-result"]')`), null);
-    assert.equal(calls.length, 6);
+    assert.equal(calls.length, baseline);
   } catch (error) { throw new Error(`${String(error)}\nFrontend output:\n${frontendLog}`); }
   finally { socket?.close(); await stop(chrome); await stop(frontend); await backend.close(); await rm(directory, { recursive: true, force: true }); }
 });

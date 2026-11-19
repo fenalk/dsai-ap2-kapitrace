@@ -69,6 +69,31 @@ describe('Lookup resilience at external HTTP boundary', () => {
     const res = await lookup(`/api/lookup/domain/${domain()}`);
     assert.equal(res.status, 503); assert.equal((await res.json()).threatScore, null); assert.equal(calls.length, 0);
   });
+  it('with only AbuseIPDB and VirusTotal configured: assesses IP, reports 503 sources, Retry-After and CORS exposure', async () => {
+    process.env.ABUSEIPDB_API_KEY = 'test-only-key';
+    const ip = await lookup('/api/lookup/ip/8.8.8.8');
+    const body = await ip.json();
+    assert.equal(ip.status, 200);
+    const status = (sources: { name: string; status: string }[], name: string) => sources.find(source => source.name === name)?.status;
+    assert.equal(status(body.sources, 'ABUSEIPDB'), 'ok'); assert.equal(status(body.sources, 'VIRUSTOTAL'), 'ok');
+    assert.equal(body.sources.find((source: { name: string }) => source.name === 'ABUSEIPDB').details.abuseConfidenceScore, 80);
+    assert.ok(Number.isFinite(body.threatScore) && body.threatScore >= 0 && body.threatScore <= 100);
+    assert.deepEqual([...new Set(calls.map(url => url.hostname))].sort(), ['api.abuseipdb.com', 'www.virustotal.com']);
+    responses.set(host, () => json({}, 429, { 'Retry-After': '90' }));
+    const limited = await lookup(`/api/lookup/domain/${domain()}`, { headers: { Origin: 'http://localhost:3000' } });
+    assert.equal(limited.status, 503); assert.equal(limited.headers.get('retry-after'), '90');
+    assert.match(limited.headers.get('access-control-expose-headers') || '', /Retry-After/i);
+    const failure = await limited.json();
+    assert.equal(failure.threatScore, null);
+    assert.equal(status(failure.sources, 'VIRUSTOTAL'), 'rate_limited'); assert.equal(status(failure.sources, 'ABUSEIPDB'), 'not_applicable');
+    assert.equal(failure.sources.find((source: { name: string }) => source.name === 'VIRUSTOTAL').retryAfter, 90);
+    delete process.env.ABUSEIPDB_API_KEY; delete process.env.VIRUSTOTAL_API_KEY;
+    const none = await lookup('/api/lookup/ip/9.9.9.9');
+    const empty = await none.json();
+    assert.equal(none.status, 503); assert.equal(none.headers.get('retry-after'), null); assert.equal(empty.threatScore, null);
+    assert.ok(empty.sources.every((source: { status: string }) => ['not_configured', 'not_applicable'].includes(source.status)));
+    assert.equal(status(empty.sources, 'ABUSEIPDB'), 'not_configured'); assert.equal(status(empty.sources, 'VIRUSTOTAL'), 'not_configured');
+  });
   it('honors 429 cooldown and Retry-After without retrying', async () => {
     responses.set(host, () => json({}, 429, { 'Retry-After': '120' }));
     const first = await lookup(`/api/lookup/domain/${domain()}`);

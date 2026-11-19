@@ -137,6 +137,14 @@ Chaves vazias desabilitam a fonte com estado explícito. IPInfo usa o endpoint l
 
 Somente a URL do backend fica em `NEXT_PUBLIC_API_BASE_URL`. Todas as variantes `.env.*` estão ignoradas, com exceção dos exemplos sem segredos. Não coloque credenciais no frontend, Git ou registros de sessão. `npm run check:secrets` verifica conteúdo no Git por arquivos de ambiente proibidos e padrões conhecidos de segredos; é uma barreira adicional, não um detector universal. JWT precisa de pelo menos 32 caracteres; cadastro público não concede `admin`.
 
+**Ativando AbuseIPDB e VirusTotal** ([SPEC-FDE 001](SPEC/SPEC-FDE/001-consulta-indicadores-seguranca.md)):
+
+1. Local: preencha só `ABUSEIPDB_API_KEY` e `VIRUSTOTAL_API_KEY` em `src/backend/.env` e reinicie o backend. O log de inicialização mostra apenas os **nomes** das fontes habilitadas, por exemplo `Threat intelligence providers configured: ABUSEIPDB, VIRUSTOTAL` (nunca valores).
+2. Produção: cadastre as mesmas variáveis como variáveis de ambiente do **host do backend** (painel do provedor de hospedagem), nunca no projeto do frontend nem em `NEXT_PUBLIC_*`. Reimplante o backend e confira o mesmo log.
+3. Ajuste `ABUSEIPDB_MIN_INTERVAL_MS` e `VIRUSTOTAL_MIN_INTERVAL_MS` à cota real das contas. Referência pública: AbuseIPDB gratuito ≈ 1.000 checks/dia; VirusTotal Public API ≈ 4 req/min e 500 req/dia, **sem uso comercial** (padrão do projeto: 15 s entre chamadas ao VirusTotal). Confirme no painel de cada conta.
+
+Com só esses dois provedores, AbuseIPDB cobre IP; domínio e hash dependem apenas do VirusTotal. A tela `/lookup` mostra o status de cada fonte (consultada, não configurada, não aplicável, com falha) e, quando nenhuma fonte responde (HTTP 503), explica a causa em português, incluindo o tempo de `Retry-After` no caso de limite de consultas. O backend expõe `Retry-After` via CORS para essa mensagem.
+
 Timeout por fonte: 5s; deadline total: 10s; no máximo um retry para rede/502/503/504. 429 e 503 ativam cooldown conforme `Retry-After`. Intervalos por fornecedor e capacidade global são configuráveis no exemplo; ajuste às cotas da sua conta. O Lookup autenticado limita 30 consultas/minuto por IP, após validar o JWT. Limites e single-flight são locais a cada processo; múltiplas instâncias exigem coordenação compartilhada.
 
 ### Supabase/PostgreSQL
