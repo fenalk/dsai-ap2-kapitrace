@@ -7,6 +7,7 @@ import authRoutes from './modules/auth/auth.route';
 import lookupRoutes from './modules/lookup/lookup.route';
 import watchlistRoutes from './modules/watchlist/watchlist.route';
 
+// /health is public; each API module applies its own authentication in its router.
 const app = express();
 
 app.use(helmet());
