@@ -1,6 +1,6 @@
 import { describe, it, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { describeDetails, missingSources, sourceTone, statusText, unavailableMessage, validationMessage } from '../../src/frontend/src/lib/lookup-messages';
+import { describeDetails, formatWait, missingSources, partialNotice, sourceTone, statusText, unavailableMessage, validationMessage } from '../../src/frontend/src/lib/lookup-messages';
 import { api, ApiError } from '../../src/frontend/src/lib/api';
 import { configuredProviders } from '../../src/backend/src/shared/config';
 const nativeFetch = globalThis.fetch;
@@ -20,6 +20,17 @@ describe('Lookup presentation (SPEC-FDE 001)', () => {
     assert.equal(statusText({ name: 'VIRUSTOTAL', status: 'rate_limited', retryAfter: 15 }), 'Limite de consultas — tente em 15 s');
     assert.equal(statusText({ name: 'VIRUSTOTAL', status: 'not_found' }), 'Sem registro');
     assert.deepEqual(missingSources([{ name: 'A', status: 'ok' }, { name: 'B', status: 'not_applicable' }, { name: 'C', status: 'rate_limited' }]).map(source => source.name), ['C']);
+  });
+  it('separates failed sources from unconfigured ones in the partial notice', () => {
+    const sources = [{ name: 'ABUSEIPDB', status: 'ok' }, { name: 'VIRUSTOTAL', status: 'rate_limited', retryAfter: 15 }, { name: 'SHODAN', status: 'not_configured' }, { name: 'IPINFO', status: 'not_configured' }, { name: 'URLSCAN', status: 'not_applicable' }];
+    assert.equal(partialNotice(sources), 'Resultado parcial: sem dados de VirusTotal (Limite de consultas — tente em 15 s). Fontes não configuradas no servidor: Shodan, IPInfo.');
+    assert.equal(partialNotice(sources.filter(source => source.name !== 'VIRUSTOTAL')), 'Resultado parcial. Fontes não configuradas no servidor: Shodan, IPInfo.');
+    assert.equal(partialNotice([{ name: 'VIRUSTOTAL', status: 'timeout' }]), 'Resultado parcial: sem dados de VirusTotal (Tempo esgotado).');
+  });
+  it('bounds and humanizes wait times', () => {
+    assert.equal(formatWait(15), '15 s'); assert.equal(formatWait(120), '120 s'); assert.equal(formatWait(121), '3 min');
+    assert.equal(formatWait(3600), '60 min'); assert.equal(formatWait(604800), 'mais de 24 h');
+    assert.equal(unavailableMessage([{ name: 'VIRUSTOTAL', status: 'rate_limited' }], 604800), 'Limite de consultas do provedor atingido. Tente novamente em mais de 24 h.');
   });
   it('explains 503 by cause without mentioning a score', () => {
     const notConfigured = [{ name: 'ABUSEIPDB', status: 'not_applicable' }, { name: 'VIRUSTOTAL', status: 'not_configured' }];

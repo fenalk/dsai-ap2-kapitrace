@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Suspense, useRef, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api, ApiError } from '../../lib/api';
-import { describeDetails, missingSources, providerName, requestLimitMessage, sourceTone, statusText, unavailableMessage, validationMessage, type LookupType, type SourceInfo } from '../../lib/lookup-messages';
+import { describeDetails, partialNotice, providerName, requestLimitMessage, sourceTone, statusText, unavailableMessage, validationMessage, type LookupType, type SourceInfo } from '../../lib/lookup-messages';
 import RequireSession from '../../components/RequireSession';
 
 interface LookupResult {
@@ -68,7 +68,7 @@ function LookupContent() {
       <div className="card"><h2>Fontes consultadas</h2><SourceList sources={result.sources} /></div>
     </div><div className="result-main"><div className="card"><h2>Indicador analisado</h2><code>{result.indicator}</code><p>Origem: <span data-testid="lookup-source">{result.source}</span></p><p>Coletado: {new Date(result.cachedAt).toLocaleString()}</p>
       {result.stale && <p role="status">Dados antigos: as fontes não forneceram uma nova avaliação. A pontuação usa a coleta anterior.</p>}
-      {result.partial && <p role="status" data-testid="partial-notice">Resultado parcial: sem dados de {missingSources(result.sources).map(source => `${providerName(source.name)} (${statusText(source)})`).join(', ') || 'algumas fontes'}.</p>}
+      {result.partial && <p role="status" data-testid="partial-notice">{partialNotice(result.sources)}</p>}
       {result.assessmentStatus === 'insufficient_data' && <p>Não há evidência suficiente para calcular reputação.</p>}
       <p>{result.analysis?.riskDescription}</p>
     </div><div className="card"><button className="btn btn-primary" onClick={addToWatchlist} disabled={adding}>{adding ? 'Adicionando…' : 'Adicionar à Watchlist'}</button><Link className="btn btn-ghost" href="/dashboard">Gerenciar watchlist</Link><Link className="btn btn-ghost" href="/login">Entrar</Link></div></div></div>}

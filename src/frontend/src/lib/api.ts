@@ -11,7 +11,8 @@ export class ApiError extends Error {
 function parseRetryAfter(value: string | null): number | null {
   if (!value) return null;
   const seconds = /^\d+$/.test(value.trim()) ? Number(value) : (Date.parse(value) - Date.now()) / 1000;
-  return Number.isFinite(seconds) && seconds > 0 ? Math.ceil(seconds) : null;
+  // Bounded so a far-future HTTP date never becomes an absurd wait on screen.
+  return Number.isFinite(seconds) && seconds > 0 ? Math.min(Math.ceil(seconds), 86400) : null;
 }
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   const pathname = new URL(path, API_BASE).pathname;

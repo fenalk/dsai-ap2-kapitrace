@@ -8,6 +8,14 @@ export const statusLabels: Record<string, string> = { ok: 'Consultada', not_foun
 
 export const providerName = (name: string): string => providerNames[name] ?? name;
 
+/** Human wait time: seconds up to 2 min, then minutes; absurd values are capped at 24 h. */
+export function formatWait(seconds: number): string {
+  const bounded = Math.min(Math.max(1, Math.ceil(seconds)), 86400);
+  if (bounded <= 120) return `${bounded} s`;
+  if (bounded < 86400) return `${Math.ceil(bounded / 60)} min`;
+  return 'mais de 24 h';
+}
+
 /** Groups statuses into the four visual states required by the SPEC. not_found is a valid answer, not a failure. */
 export function sourceTone(status: string): SourceTone {
   if (status === 'ok' || status === 'not_found') return 'ok';
@@ -17,7 +25,7 @@ export function sourceTone(status: string): SourceTone {
 
 export function statusText(source: SourceInfo): string {
   const label = statusLabels[source.status] ?? source.status;
-  return source.retryAfter ? `${label} — tente em ${source.retryAfter} s` : label;
+  return source.retryAfter ? `${label} — tente em ${formatWait(source.retryAfter)}` : label;
 }
 
 const formatValue = (value: unknown): string => Array.isArray(value) ? value.join(', ') : String(value);
@@ -58,6 +66,16 @@ export function missingSources(sources: SourceInfo[]): SourceInfo[] {
   return sources.filter(source => source.status !== 'ok' && source.status !== 'not_applicable');
 }
 
+/** Partial notice: sources that failed come first; unconfigured ones are a server setting, not a failure. */
+export function partialNotice(sources: SourceInfo[]): string {
+  const missing = missingSources(sources);
+  const failed = missing.filter(source => source.status !== 'not_configured');
+  const unconfigured = missing.filter(source => source.status === 'not_configured').map(source => providerName(source.name));
+  const notConfigured = unconfigured.length ? `Fontes não configuradas no servidor: ${unconfigured.join(', ')}.` : '';
+  if (failed.length) return [`Resultado parcial: sem dados de ${failed.map(source => `${providerName(source.name)} (${statusText(source)})`).join(', ')}.`, notConfigured].filter(Boolean).join(' ');
+  return notConfigured ? `Resultado parcial. ${notConfigured}` : 'Resultado parcial: algumas fontes não estão disponíveis.';
+}
+
 /** 503 message: says what happened and what to do. Never mentions a score. */
 export function unavailableMessage(sources: SourceInfo[], retryAfter: number | null): string {
   const applicable = sources.filter(source => source.status !== 'not_applicable');
@@ -66,7 +84,7 @@ export function unavailableMessage(sources: SourceInfo[], retryAfter: number | n
   if (limited.length) {
     const fromSources = Math.min(...limited.map(source => source.retryAfter ?? Infinity));
     const seconds = retryAfter ?? (Number.isFinite(fromSources) ? fromSources : null);
-    return seconds ? `Limite de consultas do provedor atingido. Tente novamente em ${seconds} s.` : 'Limite de consultas do provedor atingido. Tente novamente em instantes.';
+    return seconds ? `Limite de consultas do provedor atingido. Tente novamente em ${formatWait(seconds)}.` : 'Limite de consultas do provedor atingido. Tente novamente em instantes.';
   }
   return 'As fontes de inteligência não responderam. Tente novamente em instantes.';
 }
@@ -81,5 +99,5 @@ export function validationMessage(type: LookupType, message: string): string {
 
 /** Lookup rate limit (429 from our own API). */
 export function requestLimitMessage(retryAfter: number | null): string {
-  return retryAfter ? `Muitas consultas em pouco tempo. Tente novamente em ${retryAfter} s.` : 'Muitas consultas em pouco tempo. Tente novamente em instantes.';
+  return retryAfter ? `Muitas consultas em pouco tempo. Tente novamente em ${formatWait(retryAfter)}.` : 'Muitas consultas em pouco tempo. Tente novamente em instantes.';
 }

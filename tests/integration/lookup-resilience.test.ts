@@ -10,9 +10,15 @@ const domain = () => `resilience-${++sequence}.example.com`;
 describe('Lookup resilience at external HTTP boundary', () => {
   let server: TestServer;
   let lookup: TestServer['fetch'];
+  // beforeEach rewrites provider settings; restore the original environment after the suite.
+  const settings = [...keys, 'EXTERNAL_API_TIMEOUT_MS', 'LOOKUP_DEADLINE_MS', 'VIRUSTOTAL_MIN_INTERVAL_MS', 'EXTERNAL_API_MAX_CONCURRENCY', 'LOOKUP_REQUESTS_PER_MINUTE'];
+  const original = Object.fromEntries(settings.map(name => [name, process.env[name]]));
   before(async () => { server = await startTestServer();
     lookup = withBearer(server, await loginTestUser(server)); });
-  after(async () => { await server.close(); });
+  after(async () => {
+    for (const [name, value] of Object.entries(original)) if (value === undefined) delete process.env[name]; else process.env[name] = value;
+    await server.close();
+  });
   beforeEach(() => {
     resetFixtures(); resetHttpState();
     for (const key of keys) delete process.env[key];
