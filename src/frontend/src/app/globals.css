@@ -1149,6 +1149,17 @@ code, .mono {
   font-size: 0.8rem;
 }
 
+/* Source states: consulted, not configured, not applicable, failed */
+.source-item { border-left: 3px solid transparent; padding-left: 0.625rem; }
+.source-ok { border-left-color: var(--green-500); }
+.source-ok .source-status { color: var(--green-400); }
+.source-not_configured { border-left-color: var(--text-muted); }
+.source-not_configured .source-status { color: var(--text-muted); }
+.source-not_applicable { opacity: 0.6; }
+.source-not_applicable .source-status { color: var(--text-dim); }
+.source-failed { border-left-color: var(--amber-500); }
+.source-failed .source-status { color: var(--amber-400); }
+
 /* ═══════════════════════════════════════════
    Animations
    ═══════════════════════════════════════════ */

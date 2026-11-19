@@ -11,7 +11,8 @@ import watchlistRoutes from './modules/watchlist/watchlist.route';
 const app = express();
 
 app.use(helmet());
-app.use(cors());
+// Retry-After is not CORS-safelisted; the lookup page needs it for 429/503 messages.
+app.use(cors({ exposedHeaders: ['Retry-After'] }));
 app.use(express.json());
 
 // Only log HTTP requests outside test environment
