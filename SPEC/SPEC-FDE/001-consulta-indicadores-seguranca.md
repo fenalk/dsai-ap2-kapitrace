@@ -2,7 +2,7 @@
 
 - **Prioridade:** P0 — Alta
 - **Data:** 2026-11-18
-- **Status:** especificada; implementação pendente de aprovação
+- **Status:** implementada (PR #13; issue #2 fechada). Pendentes: decisão D1 e validação manual com chaves reais ("Como validar", parte manual). Atualizado em 2026-11-19 pela SPEC-FDE 005.
 - **Agente:** Claude Code (Claude Opus 5.5)
 - **Origem:** diagnóstico FDE (issue #1) e entrevista com o cliente
 - **SPECs relacionadas:** `SPEC/2026-10-06-real-api-integration.md`, `SPEC/2026-10-01-threat-analyzer.md`, `SPEC/2026-10-06-auth-and-middleware-reactivation.md`
