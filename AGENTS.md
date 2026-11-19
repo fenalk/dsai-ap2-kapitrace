@@ -117,6 +117,8 @@ npm --prefix src/frontend run lint && npm --prefix src/frontend run build
 - Commits usam Conventional Commits com trailers `Agent:` e `Spec:` (ver `SPEC/2026-10-06-*`).
 - Rode `npm run check:secrets` antes de commitar; nunca imprime valores.
 - Registre prompt literal e logs brutos em `prompts/sessoes/` quando a SPEC pedir; não registre JWTs, credenciais ou raciocínio interno.
+- **Registros de sessão não entram em PRs de código.** Depois de abrir a PR da SPEC, crie a branch `docs/sessao-<assunto>` a partir do `main`, faça o commit `docs(sessao): registrar sessao de <assunto>` com os trailers `Agent:` e `Spec:` e abra uma PR própria, citando a PR de código na descrição. A PR de registro passa pelo mesmo CI; não envie registros por push direto ao `main`.
+- Até essa PR, o registro fica local e não rastreado: não o inclua no `git add` de outras mudanças. Antes do commit, confira que o arquivo não contém JWTs, chaves, senhas ou URLs de conexão com credenciais.
 - Sem novas dependências sem justificativa: o projeto tem uma linha consistente de resolver com primitivas nativas (`fetch`, `AbortController`, `node:test`, CDP próprio).
 - Ao mudar números do ThreatScore ou status de fonte, atualize `threat-score.service.ts`, testes unitários e SPEC correspondente; o motor deve continuar **puro** (sem I/O).
 - Alterações de schema exigem nova migration em `src/backend/prisma/migrations/` (nunca `db push`/reset) e, se afetar tabelas/constraints, também `scripts/database-schema.mjs`.
