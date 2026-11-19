@@ -27,7 +27,7 @@ Mantido conforme a [SPEC-FDE 005](SPEC-FDE/005-governanca-specs.md). Ao mesclar 
 | SPEC-FDE 002 | [SPEC-FDE/002-melhoria-mensagem-erro-login.md](SPEC-FDE/002-melhoria-mensagem-erro-login.md) | proposta | #3 | — | Depende de `ApiError` em `lib/api.ts`, já entregue pela 001 |
 | SPEC-FDE 003 | [SPEC-FDE/003-melhoria-preenchimento-cadastro.md](SPEC-FDE/003-melhoria-preenchimento-cadastro.md) | proposta | #4 | — | Depende da 002. Decisões D1–D4 pendentes |
 | SPEC-FDE 004 | [SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md](SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md) | implementada | #8 | PRs #9 (SPEC), #10 e #11 | Conferência registrada do Definition of Done (E4, cenários "PR real") pendente |
-| SPEC-FDE 005 | [SPEC-FDE/005-governanca-specs.md](SPEC-FDE/005-governanca-specs.md) | aprovada | — | — | Só governança; nenhum requisito muda |
+| SPEC-FDE 005 | [SPEC-FDE/005-governanca-specs.md](SPEC-FDE/005-governanca-specs.md) | implementada | — | PR #15 | Só governança; nenhum requisito muda |
 
 "upstream" é o repositório de origem `hug0mgs/dsai-ap1-kapitrace`. Os demais números são issues/PRs deste repositório.
 

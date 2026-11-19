@@ -3,7 +3,7 @@
 - **ID:** SPEC-FDE 005
 - **Prioridade:** P1
 - **Data:** 2026-11-19
-- **Status:** aprovada (pedido explícito da responsável pelo repositório, sessão de 2026-11-19)
+- **Status:** implementada (PR #15; aprovada por pedido explícito da responsável pelo repositório na sessão de 2026-11-19)
 - **Agente:** Claude Code (Claude Opus 5.5)
 - **Origem:** revisão do repositório em 2026-11-19, que mostrou SPECs sem status confiável, sem índice e sem registro de precedência
 - **SPECs relacionadas:** todas as SPECs de `SPEC/` e `SPEC/SPEC-FDE/`
