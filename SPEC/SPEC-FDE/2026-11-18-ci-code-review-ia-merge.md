@@ -1,10 +1,11 @@
-# SPEC — GitHub Actions para Code Review com IA (DeepSeek) e Merge Automatizado
+# SPEC-FDE 004 — GitHub Actions para Code Review com IA (DeepSeek) e Merge Automatizado
 
+- **ID:** SPEC-FDE 004. O ID foi atribuído em 2026-11-19 pela SPEC-FDE 005; o nome do arquivo foi mantido porque trailers `Spec:` já apontam para ele.
 - **Data:** 2026-11-18
-- **Status:** aprovada para implementação (decisões D1–D12 resolvidas na seção 9)
+- **Status:** implementada (PRs #10 e #11; issue #8 fechada). Pendente: registro da conferência do Definition of Done (seção 12: configuração E4 e cenários "PR real"). Decisões D1–D12 resolvidas na seção 9.
 - **Agente:** Claude Code (Claude Opus 5.5)
 - **Origem:** pedido de issue "[FEATURE] Implementar GitHub Actions para Code Review com IA e Merge Automatizado". O documento de referência original **não foi fornecido**; os requisitos foram reconstruídos a partir do título do pedido, das seções exigidas para a issue e das regras do `AGENTS.md`. As decisões D2–D5 foram tomadas pela responsável pelo repositório; as demais seguem o padrão recomendado registrado na seção 9.
-- **SPECs relacionadas:** `SPEC/2026-09-30-deployment-strategy.md` (deploy), `SPEC/2026-10-06-*` (convenção de commits com trailers `Agent:`/`Spec:`)
+- **SPECs relacionadas:** `SPEC/2026-10-06-*` (convenção de commits com trailers `Agent:`/`Spec:`). Deploy ainda não tem SPEC (backlog).
 
 ## Contexto
 

@@ -1,5 +1,18 @@
 # SPEC-2026-10-01: Threat Intelligence & Unified ThreatScore Engine
 
+- **Status:** implementada (`d046996`, `23be8bc`), **substituída parcialmente** pelas SPECs de 2026-10-06. Cabeçalho acrescentado em 2026-11-19 pela [SPEC-FDE 005](SPEC-FDE/005-governanca-specs.md); o corpo abaixo é o texto original.
+
+> **Precedência — leia antes de usar esta SPEC**
+>
+> | Seção | Substituída por | O que vale hoje |
+> | --- | --- | --- |
+> | §1 item 4 e §6 item 2 (SQLite, cache local) | [2026-10-06-supabase-postgresql-migration.md](2026-10-06-supabase-postgresql-migration.md) | PostgreSQL (Supabase); não há SQLite |
+> | §3 (ThreatScore com métrica ausente, modificadores) | [2026-10-06-real-api-integration.md](2026-10-06-real-api-integration.md) §5 e §11 | Pesos renormalizados só sobre métricas disponíveis; sem métrica o score é `null`; modificadores só com evidência estruturada |
+> | §4.2 (formato da resposta do lookup e TTL único) | [2026-10-06-real-api-integration.md](2026-10-06-real-api-integration.md) §7 | Campos `data`, `analysis`, `partial`, `stale`, `assessmentStatus`, `scoreVersion`; TTL de 24 h (completo) ou 5 min (parcial); 503 sem fontes nem cache |
+> | §4.2 (acesso ao lookup) | [2026-10-06-auth-and-middleware-reactivation.md](2026-10-06-auth-and-middleware-reactivation.md) | Lookup exige `Authorization: Bearer <JWT>` |
+>
+> Divergência sem SPEC que a resolva: §4.1 pede complexidade de senha (maiúsculas, minúsculas, números e especiais), mas o código exige apenas 8 caracteres. Ver [SPEC/README.md](README.md).
+
 ## 1. Visão Geral e Arquitetura
 
 O **KapiTrace Threat Analyzer** é o subsistema central da plataforma KapiTrace encarregado de:

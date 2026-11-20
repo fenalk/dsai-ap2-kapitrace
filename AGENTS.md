@@ -42,10 +42,22 @@ src/backend/prisma/       # schema + 3 migrations (estrutura, RLS, histórico pr
 src/frontend/src/
   app/{login,lookup,dashboard,layout,page}.tsx   # páginas client-side
   lib/session.ts          # token JWT só em memória
-  lib/api.ts              # fetch + injeção de Bearer + tratamento de 401
+  lib/api.ts              # fetch + injeção de Bearer + ApiError (status/Retry-After) + 401
+  lib/lookup-messages.ts  # textos puros da tela de consulta (503, rótulos, validação)
   components/             # RequireSession, Sidebar, Topbar
 tests/{unit,integration,e2e}/ + test-helper.ts, postgres-helper.ts, http-fixtures.ts
-SPEC/                     # especificações datadas (fonte de requisitos)
+.github/
+  workflows/ci.yml        # checks obrigatórios: secrets, unit, integration, build-backend, frontend, e2e
+  workflows/ai-review.yml # revisão por IA (DeepSeek) + merge automatizado fail-closed
+  scripts/ai-review/      # decide_merge puro, regras, cliente DeepSeek, comentário
+  ai-review/prompt.md     # instruções fixas do revisor
+.claude/skills/registrar-sessao/  # skill que exporta o diálogo para prompts/sessoes/
+SPEC/
+  README.md               # ÍNDICE: status, precedência, template e formato dos trailers
+  2026-09-30-*.md         # 13 stubs com status backlog, SEM requisitos
+  2026-10-0*.md           # SPECs datadas originais (parcialmente substituídas; ver índice)
+  SPEC-FDE/NNN-*.md       # SPECs novas, numeradas (001–005)
+FDE/                      # notas de investigação da responsável (não editar)
 prompts/sessoes/          # prompts literais e logs brutos de execução
 metrics/                  # relatórios cloc
 ```
@@ -113,11 +125,13 @@ npm --prefix src/frontend run lint && npm --prefix src/frontend run build
 
 ## 8. Regras para agentes
 
-- **Trabalhe guiado por SPEC**: mudanças de comportamento exigem uma SPEC em `SPEC/` (data + escopo) commitada antes do código, como no histórico.
-- Commits usam Conventional Commits com trailers `Agent:` e `Spec:` (ver `SPEC/2026-10-06-*`).
+- **Trabalhe guiado por SPEC**: mudanças de comportamento exigem uma SPEC commitada antes do código. Antes de começar, consulte [`SPEC/README.md`](SPEC/README.md) para saber o que está vigente: as SPECs de 2026-10-01/2026-10-06 têm trechos substituídos, e os stubs de 2026-09-30 **não são requisitos**.
+- SPEC nova: `SPEC/SPEC-FDE/NNN-<slug>.md` (próximo número livre), com o cabeçalho do template de `SPEC/README.md`. Não renomeie SPECs existentes e não preencha stubs de 2026-09-30. Para tratar um desses temas, crie uma SPEC nova e marque o stub como `substituída`.
+- Ao mesclar a implementação, atualize o **status** no cabeçalho da SPEC e no índice (`proposta → aprovada → implementada → validada`), citando PR/commits e pendências que restarem.
+- Commits usam Conventional Commits com trailers `Agent:`, `Spec:` e `Co-Authored-By:` **no mesmo parágrafo final, sem linha em branco entre eles**. Com linha em branco, o Git não os reconhece. `Agent:` segue `<Ferramenta>-<Modelo>` (ex.: `Claude-Code-Opus-5.5`). Sem SPEC (só documentação): `Spec: none (<motivo>)`. Conferência: `git log --format='%h %(trailers:key=Agent,key=Spec)'`.
 - Rode `npm run check:secrets` antes de commitar; nunca imprime valores.
-- Registre prompt literal e logs brutos em `prompts/sessoes/` quando a SPEC pedir; não registre JWTs, credenciais ou raciocínio interno.
-- **Registros de sessão não entram em PRs de código.** Depois de abrir a PR da SPEC, crie a branch `docs/sessao-<assunto>` a partir do `main`, faça o commit `docs(sessao): registrar sessao de <assunto>` com os trailers `Agent:` e `Spec:` e abra uma PR própria, citando a PR de código na descrição. A PR de registro passa pelo mesmo CI; não envie registros por push direto ao `main`.
+- Registre prompt literal e logs brutos em `prompts/sessoes/` quando a SPEC pedir ou o usuário solicitar (ex.: skill `registrar-sessao`). Fora disso, não crie registro. Não registre JWTs, credenciais ou raciocínio interno.
+- **Registros de sessão não entram em PRs de código.** Quando houver registro, depois de abrir a PR da SPEC/código, crie a branch `docs/sessao-<assunto>` a partir do `main`, faça o commit `docs(sessao): registrar sessao de <assunto>` com os trailers `Agent:` e `Spec:` e abra uma PR própria, citando a PR de código na descrição. A PR de registro passa pelo mesmo CI; não envie registros por push direto ao `main`.
 - Até essa PR, o registro fica local e não rastreado: não o inclua no `git add` de outras mudanças. Antes do commit, confira que o arquivo não contém JWTs, chaves, senhas ou URLs de conexão com credenciais.
 - Sem novas dependências sem justificativa: o projeto tem uma linha consistente de resolver com primitivas nativas (`fetch`, `AbortController`, `node:test`, CDP próprio).
 - Ao mudar números do ThreatScore ou status de fonte, atualize `threat-score.service.ts`, testes unitários e SPEC correspondente; o motor deve continuar **puro** (sem I/O).
@@ -137,8 +151,10 @@ npm --prefix src/frontend run lint && npm --prefix src/frontend run build
 ## 10. Pontos de atenção
 
 - `README.md` está defasado em detalhes: cita "Next.js 15 App Router" (o `package.json` usa Next 16), mostra a árvore sem `intelligence/`, `middleware/lookup-limit.ts`, `shared/config.ts`, `scripts/` e `tests/*.ts` auxiliares. Confie no `package.json` e no código.
-- `SPEC/2026-09-30-visao-geral.md` é apenas um stub ("Details will be added here"); os requisitos efetivos estão em `2026-10-01` e `2026-10-06`.
-- Config de deploy (Vercel/Supabase) não está versionada no repo: o README fala em dois projetos, mas não há `vercel.json` nem workflow de CI.
+- Os 13 arquivos `SPEC/2026-09-30-*.md` (inclusive `visao-geral`) são stubs com status `backlog`. Os requisitos efetivos e a precedência entre SPECs estão em [`SPEC/README.md`](SPEC/README.md).
+- Divergência conhecida: a SPEC 2026-10-01 §4.1 pede complexidade de senha, mas o cadastro exige só 8 caracteres e nenhuma SPEC revoga isso. Não "corrija" sem SPEC.
+- CI existe (`.github/workflows/`, SPEC-FDE 004): PRs para `main` passam pelos seis checks e pela revisão por IA. Mudanças em `SPEC/**`, `AGENTS.md`, `README.md`, `.github/**`, `scripts/**` e `package*.json` nunca recebem merge automático (exigem humano). A proteção de branch, o secret `DEEPSEEK_API_KEY` e a label `no-automerge` são configuração manual do GitHub, não verificável no repo.
+- Config de deploy (Vercel/Supabase) não está versionada no repo: o README fala em dois projetos, mas não há `vercel.json` nem workflow de deploy.
 - `AuditLog` existe no schema (e é criado nas migrations) mas **nenhum código grava nele**.
 - `authorize()` (RBAC) existe, porém **nenhuma rota usa**: só `authenticate` é aplicado. `EmailCache` também não é lido/escrito por nenhum controller.
 - Limite de requisições, cooldown e single-flight são **por processo**: múltiplas instâncias não coordenam estado (README reconhece).
