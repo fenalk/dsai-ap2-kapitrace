@@ -40,52 +40,54 @@ Mantido conforme a [SPEC-FDE 005](SPEC-FDE/005-governanca-specs.md). Ao mesclar 
 
 Recomendação de planejamento ([SPEC-FDE 005](SPEC-FDE/005-governanca-specs.md), E5), seguindo a ordem das notas de FDE. Ela **não aprova** SPECs `proposta` nem resolve decisões pendentes. Ao concluir um item, atualize o status na tabela acima e aqui.
 
+Cada fase corresponde a uma milestone no GitHub, e cada item cita a issue que o acompanha.
+
 Legenda: ✅ concluída · 🔶 em andamento ou com pendência · ⏳ SPEC existe, falta implementar · ✏️ SPEC nova a escrever · ❓ decisão pendente
 
 ### Fase 1 — Fazer funcionar (o sistema serve ao cliente)
 
 | Ordem | Item | Estado | Depende de | Observação |
 | --- | --- | --- | --- | --- |
-| 1.1 | **D1 da SPEC-FDE 001**: fonte `not_configured` conta como parcial? | ❓ | — | Decidir antes do uso real. Com 2 provedores, toda consulta fica em cache só por 5 min e consome a cota do VirusTotal. A opção B altera a SPEC real-api §7, os testes de `lookup-resilience` e a própria 001. |
-| 1.2 | **SPEC-FDE 001**: validação manual com chaves reais | 🔶 | 1.1 | Código mesclado (PR #13). Falta executar "Como validar", parte manual, e passar o status para `validada`. |
-| 1.3 | **Deploy** (backend, frontend, Supabase, variáveis, CORS, verificação após subir) | ✏️ | 1.2 | Substitui o stub `2026-09-30-deployment-strategy.md`. Antes de escrever, definir onde hospedar. |
-| 1.4 | **Limite de tentativas no login** | ✏️ | — | Pendência de segurança da 002. Obrigatório antes de um deploy público: pode ser parte da SPEC de deploy (1.3) ou uma SPEC própria. A enumeração por tempo de resposta pode entrar junto. |
+| 1.1 | #17 **D1 da SPEC-FDE 001**: fonte `not_configured` conta como parcial? | ❓ | — | Decidir antes do uso real. Com 2 provedores, toda consulta fica em cache só por 5 min e consome a cota do VirusTotal. A opção B altera a SPEC real-api §7, os testes de `lookup-resilience` e a própria 001. |
+| 1.2 | #18 **SPEC-FDE 001**: validação manual com chaves reais | 🔶 | 1.1 | Código mesclado (PR #13). Falta executar "Como validar", parte manual, e passar o status para `validada`. |
+| 1.3 | #20 **Deploy** (backend, frontend, Supabase, variáveis, CORS, verificação após subir) | ✏️ | 1.2 | Substitui o stub `2026-09-30-deployment-strategy.md`. Antes de escrever, definir onde hospedar. |
+| 1.4 | #19 **Limite de tentativas no login** | ✏️ | — | Pendência de segurança da 002. Obrigatório antes de um deploy público: pode ser parte da SPEC de deploy (1.3) ou uma SPEC própria. A enumeração por tempo de resposta pode entrar junto. |
 
 ### Fase 2 — Experiência básica
 
 | Ordem | Item | Estado | Depende de | Observação |
 | --- | --- | --- | --- | --- |
-| 2.1 | **SPEC-FDE 002**: mensagens de erro no login | ⏳ (`proposta`) | aprovação | `ApiError` de `lib/api.ts` já existe (001). Cria as classes de erro reutilizadas pela 003. |
-| 2.2 | **SPEC-FDE 003**: preenchimento do cadastro | ⏳ (`proposta`) | 2.1; decisões D1–D4 | Mesmo componente da 002 (`login/page.tsx`): implementar depois dela para evitar conflito. Resolver junto a divergência da regra de senha (D4). |
-| 2.3 | **Sessão persistente** (usar `/api/auth/refresh`) | ✏️ ❓ | confirmação do cliente | Hoje recarregar a página faz logout. A sessão só em memória foi uma regra de segurança do cliente: confirmar com ele antes de especificar. |
+| 2.1 | #3 **SPEC-FDE 002**: mensagens de erro no login | ⏳ (`proposta`) | aprovação | `ApiError` de `lib/api.ts` já existe (001). Cria as classes de erro reutilizadas pela 003. |
+| 2.2 | #4 **SPEC-FDE 003**: preenchimento do cadastro | ⏳ (`proposta`) | 2.1; decisões D1–D4 | Mesmo componente da 002 (`login/page.tsx`): implementar depois dela para evitar conflito. Resolver junto a divergência da regra de senha (D4). |
+| 2.3 | #21 **Sessão persistente** (usar `/api/auth/refresh`) | ✏️ ❓ | confirmação do cliente | Hoje recarregar a página faz logout. A sessão só em memória foi uma regra de segurança do cliente: confirmar com ele antes de especificar. |
 
 ### Fase 3 — Medir e dar valor
 
 | Ordem | Item | Estado | Depende de | Observação |
 | --- | --- | --- | --- | --- |
-| 3.1 | **Histórico de consultas** (gravar em `AuditLog`) | ✏️ | Fase 1 | A tabela já existe nas migrations; nenhum código grava nela. Base para relatórios. |
-| 3.2 | **Reconsulta agendada da watchlist** | ✏️ | 1.3 (onde o job roda) | Sem job agendado não há alertas. Respeitar as cotas dos provedores. |
-| 3.3 | **Alertas da watchlist** | ✏️ | 3.2 | Substitui o stub `2026-09-30-watchlist-alerts.md`. |
-| 3.4 | **Relatório das consultas** | ✏️ | 3.1 | — |
+| 3.1 | #22 **Histórico de consultas** (gravar em `AuditLog`) | ✏️ | Fase 1 | A tabela já existe nas migrations; nenhum código grava nela. Base para relatórios. |
+| 3.2 | #23 **Reconsulta agendada da watchlist** | ✏️ | 1.3 (onde o job roda) | Sem job agendado não há alertas. Respeitar as cotas dos provedores. |
+| 3.3 | #24 **Alertas da watchlist** | ✏️ | 3.2 | Substitui o stub `2026-09-30-watchlist-alerts.md`. |
+| 3.4 | #25 **Relatório das consultas** | ✏️ | 3.1 | — |
 
 ### Fase 4 — Qualidade contínua
 
 | Ordem | Item | Estado | Depende de | Observação |
 | --- | --- | --- | --- | --- |
-| 4.1 | **SPEC-FDE 004**: CI, revisão por IA e merge automatizado | 🔶 | — | Mesclada (PRs #10/#11). Falta registrar a conferência do Definition of Done (E4 e cenários "PR real"). |
-| 4.2 | **docker-compose** (banco, backend e frontend com um comando) | ✏️ | — | Não pode alterar as garantias de `scripts/run-tests.mjs`. |
-| 4.3 | **Monitoramento e limpeza de cache vencido** | ✏️ | 1.3 | Hoje só existe `/health`, e linhas de cache vencidas nunca são apagadas. |
+| 4.1 | #26 **SPEC-FDE 004**: CI, revisão por IA e merge automatizado | 🔶 | — | Mesclada (PRs #10/#11). Falta registrar a conferência do Definition of Done (E4 e cenários "PR real"). |
+| 4.2 | #27 **docker-compose** (banco, backend e frontend com um comando) | ✏️ | — | Não pode alterar as garantias de `scripts/run-tests.mjs`. |
+| 4.3 | #28 **Monitoramento e limpeza de cache vencido** | ✏️ | 1.3 | Hoje só existe `/health`, e linhas de cache vencidas nunca são apagadas. |
 
 ### Fase 5 — Expansão
 
 Cada item é uma SPEC nova a escrever (✏️), sem ordem obrigatória entre eles:
 
-- **Consulta de email:** substitui `2026-09-30-email-reputation.md`. Precisa de um provedor definido; `EmailCache` já existe.
-- **Perfis de acesso (RBAC):** substitui `2026-09-30-auth-rbac.md`. `authorize()` existe, mas nenhuma rota o usa.
-- **Gestão de conta:** troca e recuperação de senha, exclusão de conta, revogação de token.
-- **Dashboard de ameaças:** substitui `2026-09-30-threat-dashboard.md`. Depende de 3.1.
-- **Demais provedores** (Shodan, GreyNoise, URLScan, OTX, IPInfo) e **modificadores do ThreatScore**: o código já existe e falta ativar com evidência. Mudar o score exige atualizar `threat-score.service.ts`, os testes e a SPEC.
-- **Integração com SIEM.**
+- #29 **Consulta de email:** substitui `2026-09-30-email-reputation.md`. Precisa de um provedor definido; `EmailCache` já existe.
+- #30 **Perfis de acesso (RBAC):** substitui `2026-09-30-auth-rbac.md`. `authorize()` existe, mas nenhuma rota o usa.
+- #31 **Gestão de conta:** troca e recuperação de senha, exclusão de conta, revogação de token.
+- #32 **Dashboard de ameaças:** substitui `2026-09-30-threat-dashboard.md`. Depende de 3.1.
+- #33 **Demais provedores** (Shodan, GreyNoise, URLScan, OTX, IPInfo) e **modificadores do ThreatScore**: o código já existe e falta ativar com evidência. Mudar o score exige atualizar `threat-score.service.ts`, os testes e a SPEC.
+- #34 **Integração com SIEM.**
 
 Os stubs que sobram (`backend-api-design`, `database-schema`, `domain-reputation`, `external-apis-integration`, `frontend-architecture`, `hash-reputation`, `ip-reputation`, `visao-geral`) já estão cobertos pelas SPECs de 2026-10-01/2026-10-06 e pela 001. Não há trabalho previsto para eles; podem ser marcados como `substituída` numa revisão futura.
 
