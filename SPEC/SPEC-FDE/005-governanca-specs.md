@@ -40,6 +40,11 @@ O projeto é guiado por SPEC (`AGENTS.md`, seção 8), mas os arquivos de `SPEC/
 - §8: dizer onde criar SPECs, apontar para o template, exigir atualizar status e índice após o merge, fixar o formato dos trailers (mesmo bloco final que o `Co-Authored-By:`, valor de `Agent:` padronizado) e esclarecer quando um registro de sessão é criado.
 - §10: corrigir a afirmação sobre CI e a referência ao stub `visao-geral`.
 
+**E5 — Ordem de implementação (acréscimo de 2026-11-19, pedido da responsável após o merge da PR #15):**
+- Seção em `SPEC/README.md` que agrupa SPECs existentes, decisões pendentes e SPECs ainda não escritas em fases, com dependências explícitas, seguindo a ordem definida nas notas de FDE ("fazer funcionar → experiência básica → medir e dar valor → qualidade contínua → expansão").
+- Temas sem SPEC aparecem como "SPEC nova a escrever", sem número reservado e sem requisitos inventados. Quando houver stub de 2026-09-30 correspondente, ele é indicado para ser marcado como `substituída`.
+- A ordem é uma recomendação de planejamento: não aprova SPEC `proposta` nem resolve decisões pendentes.
+
 ## Fora do escopo
 
 - Alterar requisitos, critérios de aceite ou decisões pendentes de qualquer SPEC. Só cabeçalhos e avisos de status ou precedência mudam.
@@ -57,6 +62,7 @@ O projeto é guiado por SPEC (`AGENTS.md`, seção 8), mas os arquivos de `SPEC/
 - **CA5:** `AGENTS.md` não afirma mais que falta CI e descreve onde criar SPECs e o formato dos trailers.
 - **CA6:** os commits desta entrega têm `Agent:`, `Spec:` e `Co-Authored-By:` no mesmo parágrafo final, e `git log --format='%(trailers:key=Spec)'` os encontra.
 - **CA7:** `npm run check:secrets` passa. Nenhum arquivo de `src/`, `tests/`, `scripts/` ou `.github/` é alterado.
+- **CA8 (E5):** `SPEC/README.md` tem a seção "Ordem de implementação", em que cada item aponta para uma SPEC existente, uma decisão pendente identificada (ex.: D1 da 001) ou um tema marcado "SPEC nova a escrever".
 
 ## Como validar
 
