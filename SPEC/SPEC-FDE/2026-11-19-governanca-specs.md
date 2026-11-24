@@ -29,7 +29,7 @@ O projeto é guiado por SPEC (`AGENTS.md`, seção 8), mas os arquivos de `SPEC/
 **E2 — Status e precedência das SPECs existentes:**
 - Acrescentar ou atualizar o status no cabeçalho de cada SPEC com requisitos, com a evidência (PR ou commit).
 - Acrescentar avisos de "substituída parcialmente por" em `2026-10-01-threat-analyzer.md` e `2026-10-06-real-api-integration.md`, sem reescrever o corpo.
-- Dar à SPEC de CI o ID "SPEC-FDE 004" no cabeçalho e no índice. **Os arquivos não são renomeados**, porque trailers `Spec:` já gravados apontam para os caminhos atuais.
+- Dar à SPEC de CI o ID "SPEC-FDE 004" no cabeçalho e no índice. **Os arquivos não são renomeados**, porque trailers `Spec:` já gravados apontam para os caminhos atuais. *(Revisto em 2026-11-24: a pedido da responsável, as SPECs-FDE numeradas passaram a `AAAA-MM-DD-<slug>.md`; ver "Como criar uma SPEC nova" em `SPEC/README.md`.)*
 
 **E3 — Stubs:**
 - Marcar os 13 stubs como `backlog` no próprio arquivo, com instrução de não usá-los como requisito.

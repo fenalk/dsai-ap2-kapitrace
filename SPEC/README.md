@@ -2,7 +2,7 @@
 
 Fonte de requisitos do projeto (SDD). Antes de implementar algo, confira aqui qual SPEC está vigente: um arquivo isolado pode ter trechos substituídos por SPECs posteriores.
 
-Mantido conforme a [SPEC-FDE 005](SPEC-FDE/005-governanca-specs.md). Ao mesclar uma PR que implementa ou altera uma SPEC, atualize o status **no cabeçalho da SPEC e nesta tabela**.
+Mantido conforme a [SPEC-FDE 005](SPEC-FDE/2026-11-19-governanca-specs.md). Ao mesclar uma PR que implementa ou altera uma SPEC, atualize o status **no cabeçalho da SPEC e nesta tabela**.
 
 ## Status
 
@@ -23,12 +23,12 @@ Mantido conforme a [SPEC-FDE 005](SPEC-FDE/005-governanca-specs.md). Ao mesclar 
 | SPEC-2026-10-06-real-api | [2026-10-06-real-api-integration.md](2026-10-06-real-api-integration.md) | implementada | upstream #3 | `8f7c94c`, `da1a7d7`, `798e1d1` | Complementa a 10-01. Trecho sobre SQLite substituído pela SPEC de Supabase. Regra de `partial` (§7) alterada pela D1 da SPEC-FDE 001 |
 | SPEC-2026-10-06-auth | [2026-10-06-auth-and-middleware-reactivation.md](2026-10-06-auth-and-middleware-reactivation.md) | implementada | upstream #4 | `45b94f0`, `c8caef2` | Substitui a 10-01 no acesso ao lookup (passa a exigir JWT) |
 | SPEC-2026-10-06-supabase | [2026-10-06-supabase-postgresql-migration.md](2026-10-06-supabase-postgresql-migration.md) | implementada | upstream #2 | `5617970`, `f7b6901`, `ab8e372` (upstream PR #8) | Substitui SQLite em todas as SPECs anteriores |
-| SPEC-FDE 001 | [SPEC-FDE/001-consulta-indicadores-seguranca.md](SPEC-FDE/001-consulta-indicadores-seguranca.md) | implementada | #2 | PR #13; D1 (opção B): issue #17 | D1 resolvida (opção B). Pendente: validação manual com chaves reais |
-| SPEC-FDE 002 | [SPEC-FDE/002-melhoria-mensagem-erro-login.md](SPEC-FDE/002-melhoria-mensagem-erro-login.md) | proposta | #3 | — | Depende de `ApiError` em `lib/api.ts`, já entregue pela 001 |
-| SPEC-FDE 003 | [SPEC-FDE/003-melhoria-preenchimento-cadastro.md](SPEC-FDE/003-melhoria-preenchimento-cadastro.md) | proposta | #4 | — | Depende da 002. Decisões D1–D4 pendentes |
+| SPEC-FDE 001 | [SPEC-FDE/2026-11-18-consulta-indicadores-seguranca.md](SPEC-FDE/2026-11-18-consulta-indicadores-seguranca.md) | implementada | #2 | PR #13; D1 (opção B): issue #17 | D1 resolvida (opção B). Pendente: validação manual com chaves reais |
+| SPEC-FDE 002 | [SPEC-FDE/2026-11-18-melhoria-mensagem-erro-login.md](SPEC-FDE/2026-11-18-melhoria-mensagem-erro-login.md) | proposta | #3 | — | Depende de `ApiError` em `lib/api.ts`, já entregue pela 001 |
+| SPEC-FDE 003 | [SPEC-FDE/2026-11-18-melhoria-preenchimento-cadastro.md](SPEC-FDE/2026-11-18-melhoria-preenchimento-cadastro.md) | proposta | #4 | — | Depende da 002. Decisões D1–D4 pendentes |
 | SPEC-FDE 004 | [SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md](SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md) | implementada | #8 | PRs #9 (SPEC), #10 e #11 | Conferência registrada do Definition of Done (E4, cenários "PR real") pendente |
-| SPEC-FDE 005 | [SPEC-FDE/005-governanca-specs.md](SPEC-FDE/005-governanca-specs.md) | implementada | — | PRs #15 e #16 (E5) | Só governança; nenhum requisito muda |
-| SPEC-FDE 006 | [SPEC-FDE/006-experiencia-frontend.md](SPEC-FDE/006-experiencia-frontend.md) | implementada | #35 (#36–#42) | PR #43 (SPEC); F1: PR #44; F2: PR #45; F3: PR #46; F4: PR #47; F5: PR #48; F6: PR #49 | Pendente: validação manual (seção 8, "Manual"). Substitui o stub `2026-09-30-frontend-architecture.md`. Não altera os textos de login da 002/003 |
+| SPEC-FDE 005 | [SPEC-FDE/2026-11-19-governanca-specs.md](SPEC-FDE/2026-11-19-governanca-specs.md) | implementada | — | PRs #15 e #16 (E5) | Só governança; nenhum requisito muda |
+| SPEC-FDE 006 | [SPEC-FDE/2026-11-24-experiencia-frontend.md](SPEC-FDE/2026-11-24-experiencia-frontend.md) | implementada | #35 (#36–#42) | PR #43 (SPEC); F1: PR #44; F2: PR #45; F3: PR #46; F4: PR #47; F5: PR #48; F6: PR #49 | Pendente: validação manual (seção 8, "Manual"). Substitui o stub `2026-09-30-frontend-architecture.md`. Não altera os textos de login da 002/003 |
 
 "upstream" é o repositório de origem `hug0mgs/dsai-ap1-kapitrace`. Os demais números são issues/PRs deste repositório.
 
@@ -39,7 +39,7 @@ Mantido conforme a [SPEC-FDE 005](SPEC-FDE/005-governanca-specs.md). Ao mesclar 
 
 ## Ordem de implementação
 
-Recomendação de planejamento ([SPEC-FDE 005](SPEC-FDE/005-governanca-specs.md), E5), seguindo a ordem das notas de FDE. Ela **não aprova** SPECs `proposta` nem resolve decisões pendentes. Ao concluir um item, atualize o status na tabela acima e aqui.
+Recomendação de planejamento ([SPEC-FDE 005](SPEC-FDE/2026-11-19-governanca-specs.md), E5), seguindo a ordem das notas de FDE. Ela **não aprova** SPECs `proposta` nem resolve decisões pendentes. Ao concluir um item, atualize o status na tabela acima e aqui.
 
 Cada fase corresponde a uma milestone no GitHub, e cada item cita a issue que o acompanha.
 
@@ -97,15 +97,15 @@ Os stubs que sobram (`backend-api-design`, `database-schema`, `domain-reputation
 
 Arquivos criados no scaffolding de 2026-09-30, com status `backlog`: `auth-rbac`, `backend-api-design`, `database-schema`, `deployment-strategy`, `domain-reputation`, `email-reputation`, `external-apis-integration`, `hash-reputation`, `ip-reputation`, `threat-dashboard`, `visao-geral`, `watchlist-alerts` (todos `2026-09-30-<nome>.md`).
 
-Já substituídos por SPEC nova: `frontend-architecture` → [SPEC-FDE 006](SPEC-FDE/006-experiencia-frontend.md).
+Já substituídos por SPEC nova: `frontend-architecture` → [SPEC-FDE 006](SPEC-FDE/2026-11-24-experiencia-frontend.md).
 
 Para trabalhar num desses temas, escreva uma SPEC nova em `SPEC/SPEC-FDE/` (seção abaixo) e marque o stub como `substituída` apontando para ela. Não preencha o stub de 2026-09-30, porque a data do nome não corresponderia à da especificação.
 
 ## Como criar uma SPEC nova
 
-- **Local e nome:** `SPEC/SPEC-FDE/NNN-<slug-em-kebab-case>.md`, com `NNN` sequencial (próximo: `007`). A data fica no cabeçalho, não no nome.
+- **Local e nome:** `SPEC/SPEC-FDE/AAAA-MM-DD-<slug-em-kebab-case>.md`, com a data de criação da SPEC (a mesma do campo **Data** do cabeçalho). O ID sequencial `SPEC-FDE NNN` fica só no cabeçalho e no índice (próximo: `007`).
 - **Ordem:** a SPEC é commitada (e, se possível, mesclada numa PR própria) antes do código que a implementa.
-- **Não renomeie SPECs existentes:** trailers `Spec:` já gravados no histórico apontam para os caminhos atuais.
+- **Não renomeie SPECs existentes:** trailers `Spec:` já gravados no histórico apontam para os caminhos atuais. Exceção: em 2026-11-24, a pedido da responsável pelo repositório, as SPECs-FDE 001, 002, 003, 005 e 006 trocaram o prefixo `NNN-` pela data de criação. Trailers anteriores citam os nomes antigos (`SPEC/SPEC-FDE/001-…`, etc.); para seguir o histórico, use `git log --follow -- <caminho novo>`.
 
 Cabeçalho:
 
@@ -134,7 +134,7 @@ docs(spec): <resumo>
 <corpo>
 
 Agent: Claude-Code-Opus-5.5
-Spec: SPEC/SPEC-FDE/NNN-<slug>.md
+Spec: SPEC/SPEC-FDE/AAAA-MM-DD-<slug>.md
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ```
 
