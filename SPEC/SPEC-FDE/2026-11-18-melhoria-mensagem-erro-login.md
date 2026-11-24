@@ -2,7 +2,7 @@
 
 - **Prioridade:** P1 — Média
 - **Data:** 2026-11-18
-- **Status:** aprovada (2026-11-24, pedido de implementação da responsável pelo repositório; issue #3)
+- **Status:** implementada (PR #57; aprovada em 2026-11-24 a pedido da responsável pelo repositório; issue #3). Pendente para `validada`: CA8 manual (contraste nos temas claro e escuro, largura de 360 px)
 - **Agente:** Claude Code (Claude Opus 5.5)
 - **Origem:** diagnóstico FDE (issue #1): "quando errei a senha de propósito, o design da mensagem de erro não é visualmente bom"
 - **SPECs relacionadas:** `SPEC/2026-10-06-auth-and-middleware-reactivation.md`, `SPEC/SPEC-FDE/2026-11-18-consulta-indicadores-seguranca.md` (compartilha a mudança em `lib/api.ts`)
