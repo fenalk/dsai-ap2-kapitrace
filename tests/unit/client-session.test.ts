@@ -2,7 +2,7 @@ import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { api, AuthenticationError } from '../../src/frontend/src/lib/api';
-import { setSessionToken, getSessionToken, hasSession, subscribeSession, serverSessionSnapshot } from '../../src/frontend/src/lib/session';
+import { setSessionToken, getSessionToken, hasSession, subscribeSession, serverSessionSnapshot, signOut, expireSession, getSessionEndReason, getSessionEmail } from '../../src/frontend/src/lib/session';
 import { signTestJwt, testClaims } from '../jwt-fixtures';
 const nativeFetch = globalThis.fetch;
 const token = signTestJwt(testClaims(), randomBytes(48).toString('hex'));
@@ -62,6 +62,46 @@ describe('Client session and mandatory Bearer transport', () => {
     globalThis.fetch = async () => { throw new TypeError('fetch failed'); };
     await assert.rejects(api('/api/watchlist'), /Não foi possível conectar/);
     assert.ok(getSessionToken() === token);
+  });
+  it('records why the session ended: logout, expired token, or a new login (SPEC-FDE 006 F2.4/F2.5)', async () => {
+    setSessionToken(token);
+    assert.equal(getSessionEndReason(), null);
+    signOut();
+    assert.equal(hasSession(), false);
+    assert.equal(getSessionEndReason(), 'logout');
+    setSessionToken(token);
+    assert.equal(getSessionEndReason(), null);
+    globalThis.fetch = async () => json({ error: 'Unauthorized' }, 401);
+    await assert.rejects(api('/api/watchlist'), AuthenticationError);
+    assert.equal(getSessionEndReason(), 'expired');
+    signOut();
+    assert.equal(getSessionEndReason(), 'expired', 'Signing out without a session keeps the previous reason');
+  });
+  it('expires only the token that failed', () => {
+    setSessionToken(token);
+    expireSession('aaa.bbb.ccc');
+    assert.ok(getSessionToken() === token);
+    expireSession(null);
+    assert.ok(getSessionToken() === token);
+    expireSession(token);
+    assert.equal(hasSession(), false);
+  });
+  it('reads the e-mail claim for display and tolerates malformed payloads', () => {
+    assert.equal(getSessionEmail(), null);
+    setSessionToken(token);
+    assert.equal(getSessionEmail(), 'unit@example.com');
+    const accented = signTestJwt(testClaims({ email: 'análise@example.com' }), randomBytes(48).toString('hex'));
+    setSessionToken(accented);
+    assert.equal(getSessionEmail(), 'análise@example.com');
+    setSessionToken('e30.bm90LWpzb24.c2ln');
+    assert.equal(getSessionEmail(), null);
+    setSessionToken(signTestJwt(testClaims({ email: 42 }), 'k'));
+    assert.equal(getSessionEmail(), null);
+    // Unsigned display value: anything that is not a plain e-mail is dropped.
+    for (const forged of ['<b>admin</b>', 'two words@example.com', 'no-at-sign', 'x@nodot']) {
+      setSessionToken(signTestJwt(testClaims({ email: forged }), 'k'));
+      assert.equal(getSessionEmail(), null, forged);
+    }
   });
   it('allows login without existing session and handles malformed JSON', async () => {
     globalThis.fetch = async (_input, init) => { assert.equal(new Headers(init?.headers).has('Authorization'), false); return json({ success: true }); };

@@ -1,11 +1,15 @@
 'use client';
-import { useState, type FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
-import { api } from '../../lib/api';
-import { setSessionToken } from '../../lib/session';
+import { Suspense, useState, type FormEvent } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { api } from '@/lib/api';
+import { setSessionToken } from '@/lib/session';
+import { afterLoginPath, loginNotice } from '@/lib/navigation';
+import Alert from '@/components/ui/Alert';
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
+  const params = useSearchParams();
+  const notice = loginNotice(params);
   const [register, setRegister] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,12 +24,14 @@ export default function LoginPage() {
       const result = await api<{ token: string }>('/api/auth/login', { method: 'POST', body: JSON.stringify(credentials) });
       if (typeof result.token !== 'string') throw new Error('Resposta de autenticação inválida.');
       setSessionToken(result.token);
-      router.replace('/lookup');
+      // F2.1: back to where the user was (only internal paths are accepted).
+      router.replace(afterLoginPath(params.get('next')));
     } catch (failure) { setError(failure instanceof Error ? failure.message : 'Falha na autenticação'); }
     finally { setLoading(false); }
   }
   return <div className="auth-page"><div className="auth-card">
     <div className="auth-logo"><h2>KapiTrace</h2><p>{register ? 'Criar conta' : 'Entrar'}</p></div>
+    {notice && !error && <Alert tone={notice.tone} role="status">{notice.text}</Alert>}
     <form className="auth-form" onSubmit={submit}>
       {register && <div className="input-group"><label htmlFor="name">Nome</label><input className="input" id="name" name="name" autoComplete="name" /></div>}
       <div className="input-group"><label htmlFor="email">Email</label><input className="input" id="email" name="email" type="email" autoComplete="email" required /></div>
@@ -35,4 +41,8 @@ export default function LoginPage() {
     </form>
     <button className="btn btn-ghost" disabled={loading} onClick={() => { setRegister(!register); setError(''); }}>{register ? 'Já tenho conta' : 'Criar conta'}</button>
   </div></div>;
+}
+
+export default function LoginPage() {
+  return <Suspense fallback={<p className="auth-page" role="status">Carregando…</p>}><LoginContent /></Suspense>;
 }

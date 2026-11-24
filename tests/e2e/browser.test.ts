@@ -109,7 +109,13 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
     assert.equal(await evaluate(`sessionStorage.getItem('kapitrace.session') === null && localStorage.getItem('kapitrace.session') === null`), true);
     await clientNavigate('/dashboard');
     await until(async () => await evaluate(`document.body.textContent.includes('Nenhum indicador monitorado.')`));
+    // F2.4: "Sair" sits in the closed account disclosure; open it like a user would.
+    assert.equal(await evaluate(`document.querySelector('.user-menu-panel').hidden`), true);
+    await evaluate(`document.querySelector('.user-menu-toggle').click()`);
+    await until(async () => await evaluate(`document.querySelector('.user-menu-panel').hidden === false && document.querySelector('.user-menu-email')?.textContent.includes(${JSON.stringify(email)})`));
     await button('Sair'); await waitForLogin();
+    assert.equal(await evaluate(`location.search`), '?saiu=1');
+    await until(async () => await evaluate(`document.querySelector('[role="status"]')?.textContent.includes('Você saiu da sua conta.')`));
     await fill('#email', email); await fill('#password', 'WrongTestOnlyPassword!'); await button('Entrar');
     await until(async () => await evaluate(`document.querySelector('[role="alert"]')?.textContent.includes('Invalid credentials')`));
     assert.equal(await evaluate(`location.pathname`), '/login');
@@ -174,9 +180,22 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
     process.env.JWT_SECRET = randomBytes(48).toString('hex');
     await fill('[aria-label="Indicador"]', '8.8.8.8'); await button('Analisar'); await waitForLogin();
     assert.equal(calls.length, baseline);
+    // F2.5: 401 keeps the destination and says the session expired.
+    assert.deepEqual(await evaluate(`Object.fromEntries(new URLSearchParams(location.search))`), { next: '/lookup?type=ip', expirou: '1' });
+    await until(async () => await evaluate(`document.querySelector('[role="status"]')?.textContent.includes('Sua sessão expirou. Entre novamente.')`));
     await fill('#email', email); await fill('#password', 'BrowserTestOnly-2026!'); await button('Entrar'); await waitForLookup();
+    assert.equal(await evaluate(`location.search`), '?type=ip');
     await send('Page.reload'); await waitForLogin();
     assert.equal(await evaluate(`document.querySelector('[data-testid="lookup-result"]')`), null);
+    assert.equal(calls.length, baseline);
+    // F2.1 + F2.2: a deep link with ?q= survives the login and runs the lookup once (served from cache).
+    await send('Page.navigate', { url: `http://127.0.0.1:${port}/lookup?type=ip&q=8.8.8.8` }); await waitForLogin();
+    assert.equal(await evaluate(`new URLSearchParams(location.search).get('next')`), '/lookup?type=ip&q=8.8.8.8');
+    await delay(400);
+    await fill('#email', email); await fill('#password', 'BrowserTestOnly-2026!'); await button('Entrar'); await waitForLookup();
+    await until(async () => await evaluate(`document.querySelector('[data-testid="lookup-source"]')?.textContent === 'cache'`));
+    assert.equal(await evaluate(`document.querySelector('[aria-label="Indicador"]').value`), '8.8.8.8');
+    assert.equal(lookupRequests.filter(request => request.hasBearer).length, lookupRequests.length);
     assert.equal(calls.length, baseline);
   } catch (error) { throw new Error(`${String(error)}\nFrontend output:\n${frontendLog}`); }
   finally { socket?.close(); await stop(chrome); await stop(frontend); await backend.close(); await rm(directory, { recursive: true, force: true }); }

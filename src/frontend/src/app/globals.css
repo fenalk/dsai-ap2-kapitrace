@@ -476,8 +476,6 @@ ul[role='list'], ol[role='list'] { list-style: none; }
 .sidebar-link:hover { background: var(--surface-2); color: var(--text); }
 .sidebar-link.active, .sidebar-link[aria-current='page'] { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-border); }
 .sidebar-link .icon { width: 20px; height: 20px; }
-.sidebar-footer { padding: var(--space-4) var(--space-5); border-top: 1px solid var(--border); font-size: var(--text-xs); color: var(--text-muted); }
-.status-dot { display: inline-block; width: 8px; height: 8px; margin-right: var(--space-2); border-radius: 50%; background: var(--success); vertical-align: middle; }
 
 .app-main { display: flex; flex-direction: column; min-width: 0; }
 .app-main > main { flex: 1; display: flex; flex-direction: column; }
@@ -503,6 +501,30 @@ main:focus { outline: none; }
 .app-topbar a:not(.btn):hover { color: var(--text); }
 .app-topbar .brand { display: none; }
 .menu-toggle { display: none; }
+
+/* Account menu (F2.4) */
+.user-menu { position: relative; }
+.user-menu-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--space-2));
+  z-index: 50;
+  display: grid;
+  gap: var(--space-3);
+  width: max-content;
+  min-width: 220px;
+  max-width: min(320px, calc(100vw - 2 * var(--gutter)));
+  padding: var(--space-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  animation: riseIn var(--dur) var(--ease);
+}
+.user-menu-panel[hidden] { display: none; }
+.user-menu-email { display: grid; gap: 2px; font-size: var(--text-xs); overflow-wrap: anywhere; }
+.user-menu-email strong { color: var(--text); font-size: var(--text-sm); font-weight: 600; }
+.user-menu-signout { justify-content: flex-start; }
 
 .drawer-backdrop {
   position: fixed;
@@ -531,12 +553,9 @@ main:focus { outline: none; }
   .sidebar-brand { justify-content: center; padding: var(--space-4) 0; }
   .sidebar .brand-name,
   .sidebar-section-label,
-  .sidebar-link-label,
-  .sidebar-footer-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .sidebar-link-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .sidebar-nav { padding: var(--space-2); }
   .sidebar-link { justify-content: center; padding: 0.5rem; }
-  .sidebar-footer { padding: var(--space-4) 0; text-align: center; }
-  .status-dot { margin: 0; }
 }
 
 /* Mobile: top bar + navigation drawer. */
@@ -557,12 +576,9 @@ main:focus { outline: none; }
   .sidebar-brand { justify-content: space-between; padding: var(--space-4) var(--space-4) var(--space-3) var(--space-5); }
   .sidebar .brand-name,
   .sidebar-section-label,
-  .sidebar-link-label,
-  .sidebar-footer-text { position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal; }
+  .sidebar-link-label { position: static; width: auto; height: auto; overflow: visible; clip: auto; white-space: normal; }
   .sidebar-nav { padding: var(--space-2) var(--space-3); }
   .sidebar-link { justify-content: flex-start; padding: 0.5rem var(--space-3); min-height: 48px; }
-  .sidebar-footer { padding: var(--space-4) var(--space-5); text-align: left; }
-  .status-dot { margin-right: var(--space-2); }
   .drawer-close { display: inline-flex; }
   .menu-toggle { display: inline-flex; }
   .app-topbar .brand { display: inline-flex; }
@@ -591,6 +607,12 @@ main:focus { outline: none; }
   border-bottom: 1px solid var(--border);
 }
 .landing-nav-actions { display: flex; gap: var(--space-2); }
+@media (max-width: 519.98px) {
+  /* Two actions + brand must fit 360 px: the name stays in the accessibility tree. */
+  .landing-nav .brand-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .landing-nav .btn { padding-inline: 0.8rem; }
+  .landing-nav .btn .icon { display: none; }
+}
 
 .hero { padding: clamp(3rem, 8vw, 6rem) var(--gutter) var(--space-7); text-align: center; }
 .hero-badge {

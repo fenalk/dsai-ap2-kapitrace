@@ -1,5 +1,5 @@
 'use client';
-import { getSessionToken, setSessionToken } from './session';
+import { expireSession, getSessionToken } from './session';
 export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
 export class AuthenticationError extends Error {
   constructor() { super('Sessão ausente ou expirada. Entre novamente.'); this.name = 'AuthenticationError'; }
@@ -28,7 +28,8 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   try { response = await fetch(`${API_BASE}${path}`, { ...options, headers, cache: 'no-store' }); }
   catch { throw new Error('Não foi possível conectar ao servidor. Tente novamente.'); }
   if (authenticated && response.status === 401) {
-    if (getSessionToken() === requestToken) setSessionToken(null);
+    // Clears only the token that failed: a newer login made meanwhile survives.
+    expireSession(requestToken);
     throw new AuthenticationError();
   }
   let data: Record<string, unknown>;

@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, type FormEvent } from 'react';
+import { useState, useSyncExternalStore, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Icon, { type IconName } from '@/components/ui/Icon';
 import { ButtonLink } from '@/components/ui/Button';
+import { hasSession, serverSessionSnapshot, subscribeSession } from '@/lib/session';
 
 const features: { icon: IconName; title: string; description: string; tone: string }[] = [
   { icon: 'globe', title: 'IP Reputation', description: 'Análise completa com AbuseIPDB, VirusTotal, Shodan e GreyNoise combinados em um score unificado.', tone: 'cyan' },
@@ -21,6 +22,8 @@ const examples = ['185.220.101.34', 'malware.xyz', 'd41d8cd98f00b204e9800998ecf8
 export default function Home() {
   const router = useRouter();
   const [query, setQuery] = useState('');
+  // F2.6: calls to action follow the in-memory session (none after a reload).
+  const signedIn = useSyncExternalStore(subscribeSession, hasSession, serverSessionSnapshot);
   function search(event: FormEvent) {
     event.preventDefault();
     const indicator = query.trim();
@@ -36,8 +39,13 @@ export default function Home() {
           <span className="brand-name">KapiTrace</span>
         </Link>
         <nav className="landing-nav-actions" aria-label="Acesso">
-          <ButtonLink href="/login" variant="ghost">Login</ButtonLink>
-          <ButtonLink href="/dashboard">Dashboard <Icon name="arrow-right" /></ButtonLink>
+          {signedIn ? <>
+            <ButtonLink href="/dashboard" variant="ghost">Watchlist</ButtonLink>
+            <ButtonLink href="/lookup">Ir para consultas <Icon name="arrow-right" /></ButtonLink>
+          </> : <>
+            <ButtonLink href="/login" variant="ghost">Entrar</ButtonLink>
+            <ButtonLink href="/lookup">Consultar <Icon name="arrow-right" /></ButtonLink>
+          </>}
         </nav>
       </header>
 
@@ -103,10 +111,15 @@ export default function Home() {
 
         <section className="cta">
           <h2>Pronto para investigar?</h2>
-          <p>Acesse o painel e comece a analisar ameaças agora.</p>
+          <p>{signedIn ? 'Sua sessão está ativa: continue de onde parou.' : 'Entre ou crie uma conta e comece a analisar indicadores agora.'}</p>
           <div className="cta-actions">
-            <ButtonLink href="/dashboard" size="lg">Acessar Dashboard</ButtonLink>
-            <ButtonLink href="/lookup" variant="ghost" size="lg">Fazer um Lookup</ButtonLink>
+            {signedIn ? <>
+              <ButtonLink href="/lookup" size="lg">Ir para consultas</ButtonLink>
+              <ButtonLink href="/dashboard" variant="ghost" size="lg">Abrir watchlist</ButtonLink>
+            </> : <>
+              <ButtonLink href="/login" size="lg">Entrar ou criar conta</ButtonLink>
+              <ButtonLink href="/lookup" variant="ghost" size="lg">Fazer uma consulta</ButtonLink>
+            </>}
           </div>
         </section>
       </main>
