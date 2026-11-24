@@ -1,10 +1,20 @@
 'use client';
 import Link from 'next/link';
-import { Suspense, useEffect, useEffectEvent, useRef, useState, type FormEvent } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { api, ApiError } from '@/lib/api';
-import { describeDetails, partialNotice, providerName, requestLimitMessage, sourceTone, statusText, unavailableMessage, validationMessage, type LookupType, type SourceInfo } from '@/lib/lookup-messages';
+import { Suspense, useEffect, useEffectEvent, useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { api, ApiError, type WatchlistItem } from '@/lib/api';
+import { formatWait, partialNotice, requestLimitMessage, unavailableMessage, validationMessage, type LookupType, type SourceInfo } from '@/lib/lookup-messages';
+import { detectIndicatorType, normalizeIndicator, sentValueNotice } from '@/lib/indicator';
+import { coveragePercent, expiryText, originLabel, relativeTime, retryDelay, riskBand } from '@/lib/lookup-result';
+import { getRecentLookups, rememberLookup, serverRecentLookups, subscribeRecentLookups } from '@/lib/recent-lookups';
 import RequireSession from '@/components/RequireSession';
+import Alert from '@/components/ui/Alert';
+import Badge from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import Card, { CardHeader } from '@/components/ui/Card';
+import Icon, { type IconName } from '@/components/ui/Icon';
+import { useToast } from '@/components/ui/Toast';
+import { CopyButton, CoverageBar, ResultSkeleton, ScoreGauge, SourceGroups } from '@/components/lookup/ResultParts';
 
 interface LookupResult {
   indicator: string; type: LookupType; threatScore: number | null; riskLevel: string | null;
@@ -12,84 +22,274 @@ interface LookupResult {
   cachedAt: string; expiresAt: string; sources: SourceInfo[];
   analysis: { confidencePercentage: number; riskDescription: string } | null;
 }
-interface LookupError { message: string; sources?: SourceInfo[] }
+interface LookupError { message: string; sources?: SourceInfo[]; retryIn: number | null }
+type WatchState = 'checking' | 'absent' | 'present' | 'adding';
+
+const types: { value: LookupType; label: string; icon: IconName }[] = [
+  { value: 'ip', label: 'IP', icon: 'globe' },
+  { value: 'domain', label: 'Domínio', icon: 'link' },
+  { value: 'hash', label: 'Hash', icon: 'hash' },
+];
+const typeName: Record<LookupType, string> = { ip: 'IP', domain: 'Domínio', hash: 'Hash' };
+// Wall clock read only in event handlers and timers, never while rendering.
+const clock = (): number => Date.now();
+const parseType = (value: string | null): LookupType | null => value === 'ip' || value === 'domain' || value === 'hash' ? value : null;
+
 function lookupError(failure: unknown, type: LookupType): LookupError {
   if (failure instanceof ApiError) {
     const sources = Array.isArray(failure.body.sources) ? failure.body.sources as SourceInfo[] : undefined;
-    if (failure.status === 503 && sources) return { message: unavailableMessage(sources, failure.retryAfter), sources };
-    if (failure.status === 400 && failure.body.error === 'Validation Error') return { message: validationMessage(type, failure.message) };
-    if (failure.status === 429) return { message: requestLimitMessage(failure.retryAfter) };
-    if (failure.status === 503) return { message: 'O servidor está sobrecarregado. Tente novamente em instantes.' };
+    const retryIn = retryDelay(failure.status, failure.retryAfter, sources);
+    if (failure.status === 503 && sources) return { message: unavailableMessage(sources, failure.retryAfter), sources, retryIn };
+    if (failure.status === 400 && failure.body.error === 'Validation Error') return { message: validationMessage(type, failure.message), retryIn };
+    if (failure.status === 429) return { message: requestLimitMessage(failure.retryAfter), retryIn };
+    if (failure.status === 503) return { message: 'O servidor está sobrecarregado. Tente novamente em instantes.', retryIn };
   }
-  return { message: failure instanceof Error ? failure.message : 'Falha na busca' };
+  return { message: failure instanceof Error ? failure.message : 'Falha na busca', retryIn: null };
 }
-function SourceList({ sources }: { sources: SourceInfo[] }) {
-  return <ul className="source-list">{sources.map(source => <li className={`source-item source-${sourceTone(source.status)}`} key={source.name} data-testid={`source-${source.name}`} data-status={source.status}><div><strong>{providerName(source.name)}</strong><p className="source-status">{statusText(source)}</p>{describeDetails(source.name, source.details).map(line => <p className="text-dim" key={line}>{line}</p>)}</div></li>)}</ul>;
+
+/** Date relative to now, with the full date in the tooltip and in <time dateTime> (F4.9). */
+function When({ iso, now, text }: { iso: string; now: number; text: (relative: string) => string }) {
+  const relative = relativeTime(iso, now);
+  const date = new Date(iso);
+  if (!relative || Number.isNaN(date.getTime())) return null;
+  return <time dateTime={iso} title={date.toLocaleString('pt-BR')}>{text(relative)}</time>;
 }
+
 function LookupContent() {
   const params = useSearchParams();
-  const router = useRouter();
-  const selected = params.get('type');
-  const type: LookupType = selected === 'domain' || selected === 'hash' ? selected : 'ip';
+  const toast = useToast();
+  const urlType = parseType(params.get('type'));
   const [query, setQuery] = useState(params.get('q') || '');
+  // F4.1: a type chosen by hand (or pre-selected by ?type=) wins until the field changes again.
+  const [manualType, setManualType] = useState<LookupType | null>(urlType);
   const [result, setResult] = useState<LookupResult | null>(null);
   const [error, setError] = useState<LookupError | null>(null);
-  const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
-  const [adding, setAdding] = useState(false);
+  const [watch, setWatch] = useState<WatchState>('checking');
+  const [addError, setAddError] = useState('');
+  const [now, setNow] = useState(0);
+  const [cooldownUntil, setCooldownUntil] = useState(0);
+  const recent = useSyncExternalStore(subscribeRecentLookups, getRecentLookups, serverRecentLookups);
   const generation = useRef(0);
   const autoSearched = useRef<string | null>(null);
-  async function runSearch(indicator: string) {
-    const current = ++generation.current;
-    setError(null); setNotice(''); setResult(null); setLoading(true);
+  const appliedUrlType = useRef(urlType);
+
+  const type: LookupType = manualType ?? (query.trim() ? detectIndicatorType(query) : 'ip');
+  const sentAs = sentValueNotice(query, type);
+  const waitSeconds = Math.max(0, Math.ceil((cooldownUntil - now) / 1000));
+  const coolingDown = waitSeconds > 0;
+
+  // Clock for the countdown (every second) and for relative dates of a shown result (every 30 s).
+  useEffect(() => {
+    if (!coolingDown && !result) return;
+    const timer = window.setInterval(() => setNow(clock()), coolingDown ? 1000 : 30000);
+    return () => window.clearInterval(timer);
+  }, [coolingDown, result]);
+
+  async function checkWatchlist(found: LookupResult, current: number) {
+    setWatch('checking');
     try {
-      const data = await api<LookupResult>(`/api/lookup/${type}/${encodeURIComponent(indicator.trim())}`);
-      if (current === generation.current) setResult(data);
-    } catch (failure) { if (current === generation.current) setError(lookupError(failure, type)); }
-    finally { if (current === generation.current) setLoading(false); }
+      const items = await api<WatchlistItem[]>('/api/watchlist');
+      if (current !== generation.current) return;
+      const listed = Array.isArray(items) && items.some(item => item.itemType === found.type && item.itemValue === found.indicator);
+      setWatch(listed ? 'present' : 'absent');
+    } catch {
+      // Without the list the user can still add: the backend accepts the item either way.
+      if (current === generation.current) setWatch('absent');
+    }
   }
+
+  async function runSearch(raw: string, searchType: LookupType) {
+    const indicator = normalizeIndicator(raw, searchType);
+    if (!indicator) return;
+    const current = ++generation.current;
+    setError(null); setAddError(''); setResult(null); setLoading(true);
+    try {
+      const data = await api<LookupResult>(`/api/lookup/${searchType}/${encodeURIComponent(indicator)}`);
+      if (current !== generation.current) return;
+      setNow(clock());
+      setResult(data);
+      rememberLookup({ type: data.type, indicator: data.indicator });
+      void checkWatchlist(data, current);
+    } catch (failure) {
+      if (current !== generation.current) return;
+      const failureInfo = lookupError(failure, searchType);
+      setError(failureInfo);
+      if (failureInfo.retryIn) {
+        const started = clock();
+        setNow(started);
+        setCooldownUntil(started + failureInfo.retryIn * 1000);
+      }
+    } finally { if (current === generation.current) setLoading(false); }
+  }
+
   function search(event: FormEvent) {
     event.preventDefault();
-    void runSearch(query);
+    if (loading || coolingDown) return;
+    void runSearch(query, type);
   }
+
+  function searchAgain(indicator: string, searchType: LookupType) {
+    if (loading || coolingDown) return;
+    setQuery(indicator); setManualType(searchType);
+    void runSearch(indicator, searchType);
+  }
+
+  // F4.3: the navigation shortcuts (?type=) pre-select the type; a stale answer for the previous screen is dropped.
+  const applyAddressType = useEffectEvent((next: LookupType | null) => {
+    generation.current++;
+    setManualType(next); setResult(null); setError(null); setAddError(''); setLoading(false);
+  });
+  useEffect(() => {
+    if (appliedUrlType.current === urlType) return;
+    appliedUrlType.current = urlType;
+    applyAddressType(urlType);
+  }, [urlType]);
+
   // F2.2: opening an address with ?q= (landing, login redirect, watchlist) runs the lookup once for that address;
   // re-renders of the same type+q do not repeat it. useEffectEvent is stable API since React 19.2 (package.json pins 19.2.x).
   const searchFromAddress = useEffectEvent((indicator: string) => {
-    setQuery(indicator);
-    void runSearch(indicator);
+    const addressType = urlType ?? detectIndicatorType(indicator);
+    setQuery(indicator); setManualType(addressType);
+    void runSearch(indicator, addressType);
   });
   const addressQuery = params.get('q')?.trim() ?? '';
   useEffect(() => {
     if (!addressQuery) return;
-    const key = `${type}:${addressQuery}`;
+    const key = `${urlType}:${addressQuery}`;
     if (autoSearched.current === key) return;
     autoSearched.current = key;
     searchFromAddress(addressQuery);
-  }, [type, addressQuery]);
+  }, [urlType, addressQuery]);
+
   async function addToWatchlist() {
-    if (!result) return;
-    setAdding(true); setError(null); setNotice('');
+    if (!result || watch !== 'absent') return;
+    const current = generation.current;
+    setWatch('adding'); setAddError('');
     try {
       await api('/api/watchlist', { method: 'POST', body: JSON.stringify({ itemValue: result.indicator, itemType: result.type }) });
-      setNotice('Indicador adicionado à watchlist.');
-    } catch (failure) { setError({ message: failure instanceof Error ? failure.message : 'Falha ao adicionar' }); }
-    finally { setAdding(false); }
+      if (current === generation.current) setWatch('present');
+      toast({ message: 'Indicador adicionado à watchlist.' });
+    } catch (failure) {
+      if (current !== generation.current) return;
+      setWatch('absent');
+      setAddError(failure instanceof Error ? failure.message : 'Falha ao adicionar');
+    }
   }
+
+  const band = result ? riskBand(result.riskLevel) : null;
+  const coverage = result ? coveragePercent(result.analysis) : null;
+  const submitLabel = coolingDown ? `Aguarde ${formatWait(waitSeconds)}` : loading ? 'Consultando…' : 'Analisar';
+
   return <div className="page-content">
-    <div className="lookup-hero"><h1>Threat Intelligence Lookup</h1><p>Consulte relatórios existentes de IPs, domínios e hashes.</p>
-      <div className="lookup-type-tabs">{(['ip', 'domain', 'hash'] as const).map(value => <button key={value} className={`lookup-type-tab ${type === value ? 'active' : ''}`} disabled={loading} onClick={() => { generation.current++; router.push(`/lookup?type=${value}`); setResult(null); setError(null); setNotice(''); }}>{value.toUpperCase()}</button>)}<span className="text-dim">Email: integração ainda indisponível</span></div>
-      <form className="search-hero" onSubmit={search}><input aria-label="Indicador" required maxLength={512} value={query} onChange={event => setQuery(event.target.value)} placeholder={type === 'ip' ? '8.8.8.8' : type === 'domain' ? 'example.com' : 'MD5, SHA-1 ou SHA-256'} /><button className="btn btn-primary" disabled={loading} type="submit">{loading ? 'Consultando…' : 'Analisar'}</button></form>
+    <div className="lookup-hero">
+      <h1>Threat Intelligence Lookup</h1>
+      <p>Consulte relatórios existentes de IPs, domínios e hashes. Cole o indicador: o tipo é detectado sozinho.</p>
+      <form className="lookup-form" onSubmit={search}>
+        <div className="search-hero">
+          <span className="search-hero-icon"><Icon name="search" /></span>
+          <input
+            aria-label="Indicador"
+            aria-describedby="lookup-input-hint"
+            required
+            maxLength={512}
+            autoComplete="off"
+            spellCheck={false}
+            value={query}
+            onChange={event => { setQuery(event.target.value); setManualType(null); }}
+            placeholder="IP, domínio, URL ou hash (MD5, SHA-1, SHA-256)"
+          />
+          <Button type="submit" loading={loading} disabled={coolingDown} data-testid="lookup-submit">{submitLabel}</Button>
+        </div>
+        <div className="lookup-options">
+          <fieldset className="type-picker">
+            <legend className="visually-hidden">Tipo do indicador</legend>
+            {types.map(option => (
+              <label key={option.value} className={option.value === type ? 'type-chip selected' : 'type-chip'}>
+                <input type="radio" name="indicator-type" value={option.value} checked={option.value === type} onChange={() => setManualType(option.value)} />
+                <Icon name={option.icon} />{option.label}
+              </label>
+            ))}
+          </fieldset>
+          <span className="text-dim lookup-email-note">Email: integração ainda indisponível</span>
+        </div>
+        <p className="field-hint lookup-hint" id="lookup-input-hint" data-testid="type-hint">
+          {manualType ? `Tipo selecionado: ${typeName[type]}.` : query.trim() ? `Tipo detectado: ${typeName[type]}. Você pode trocá-lo acima.` : 'Aceita indicadores "defanged", como 8.8.8[.]8 ou hxxps://exemplo[.]com.'}
+        </p>
+        {sentAs && <p className="field-hint lookup-sent-as" data-testid="sent-value">Consultando como: <code>{sentAs}</code></p>}
+      </form>
+      {recent.length > 0 && (
+        <nav className="recent-lookups" aria-label="Consultas recentes" data-testid="recent-lookups">
+          <span className="recent-lookups-label">Consultas recentes</span>
+          <ul className="cluster" role="list">
+            {recent.map(item => (
+              <li key={`${item.type}:${item.indicator}`}>
+                <button type="button" className="recent-chip" disabled={loading || coolingDown} onClick={() => searchAgain(item.indicator, item.type)} title={`Consultar ${item.indicator} de novo`}>
+                  <span className="recent-chip-type">{typeName[item.type]}</span><code>{item.indicator}</code>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
     </div>
-    {error && <div className="card" data-testid="lookup-error"><p role="alert">{error.message}</p>{error.sources && <><h2>Situação das fontes</h2><SourceList sources={error.sources} /></>}</div>}{notice && <p role="status">{notice}</p>}
-    {result && result.type === type && <div className="result-grid" data-testid="lookup-result"><div className="result-sidebar">
-      <div className="card result-score-card"><h2>ThreatScore</h2><div className="threat-score" data-testid="threat-score">{result.threatScore ?? 'Sem pontuação'}</div><p>{result.riskLevel ?? 'Dados insuficientes'}</p><p>Cobertura de evidências: {result.analysis?.confidencePercentage ?? 0}%</p></div>
-      <div className="card"><h2>Fontes consultadas</h2><SourceList sources={result.sources} /></div>
-    </div><div className="result-main"><div className="card"><h2>Indicador analisado</h2><code>{result.indicator}</code><p>Origem: <span data-testid="lookup-source">{result.source}</span></p><p>Coletado: {new Date(result.cachedAt).toLocaleString()}</p>
-      {result.stale && <p role="status">Dados antigos: as fontes não forneceram uma nova avaliação. A pontuação usa a coleta anterior.</p>}
-      {result.partial && <p role="status" data-testid="partial-notice">{partialNotice(result.sources)}</p>}
-      {result.assessmentStatus === 'insufficient_data' && <p>Não há evidência suficiente para calcular reputação.</p>}
-      <p>{result.analysis?.riskDescription}</p>
-    </div><div className="card"><button className="btn btn-primary" onClick={addToWatchlist} disabled={adding}>{adding ? 'Adicionando…' : 'Adicionar à Watchlist'}</button><Link className="btn btn-ghost" href="/dashboard">Gerenciar watchlist</Link></div></div></div>}
+
+    {loading && <>
+      <p className="lookup-wait" role="status" data-testid="lookup-loading">A consulta pode levar até 10 s.</p>
+      <ResultSkeleton />
+    </>}
+
+    {error && <Card data-testid="lookup-error">
+      <Alert tone="danger"><p>{error.message}</p></Alert>
+      {error.sources && <><CardHeader title="Situação das fontes" /><SourceGroups sources={error.sources} /></>}
+    </Card>}
+
+    {result && <div className="result-grid" data-testid="lookup-result">
+      <div className="result-sidebar">
+        <Card className="result-score-card">
+          <CardHeader title="ThreatScore" />
+          <ScoreGauge score={result.threatScore} riskLevel={result.riskLevel} />
+          {band
+            ? <Badge tone={`risk-${band.tone}`} className="risk-badge"><span data-testid="risk-label">Risco {band.label.toLowerCase()}</span></Badge>
+            : <p className="text-muted" data-testid="risk-label">Dados insuficientes</p>}
+          <CoverageBar percent={coverage} />
+        </Card>
+        <Card>
+          <CardHeader title="Watchlist" />
+          {watch === 'present'
+            ? <>
+              <Button variant="secondary" block disabled data-testid="watchlist-status"><Icon name="check" />Na watchlist</Button>
+              <Link href="/dashboard" className="watchlist-link">Abrir watchlist <Icon name="arrow-right" /></Link>
+            </>
+            : <>
+              <Button block onClick={addToWatchlist} loading={watch === 'checking' || watch === 'adding'} data-testid="watchlist-status">
+                <Icon name="eye" />{watch === 'adding' ? 'Adicionando…' : 'Adicionar à Watchlist'}
+              </Button>
+              <Link href="/dashboard" className="watchlist-link">Gerenciar watchlist <Icon name="arrow-right" /></Link>
+            </>}
+          {addError && <Alert tone="danger">{addError}</Alert>}
+        </Card>
+      </div>
+      <div className="result-main">
+        <Card>
+          <CardHeader title="Indicador analisado" actions={<CopyButton value={result.indicator} />} />
+          <p className="result-indicator"><Badge tone="accent">{typeName[result.type]}</Badge><code>{result.indicator}</code></p>
+          <dl className="result-facts">
+            <div><dt>Origem</dt><dd><span data-testid="lookup-source" data-source={result.source}>{originLabel(result.source)}</span></dd></div>
+            <div><dt>Coleta</dt><dd><When iso={result.cachedAt} now={now} text={relative => relative === 'agora' ? 'agora mesmo' : relative} /></dd></div>
+            <div><dt>Validade</dt><dd><When iso={result.expiresAt} now={now} text={() => expiryText(result.expiresAt, now) ?? ''} /></dd></div>
+          </dl>
+          {band && <p className="result-description" data-testid="risk-description">{band.description}</p>}
+          {result.stale && <Alert tone="danger" role="status" title="Dados antigos" data-testid="stale-notice"><p>As fontes não forneceram uma nova avaliação. A pontuação usa a coleta anterior.</p></Alert>}
+          {result.partial && <Alert tone="warning" data-testid="partial-notice"><p>{partialNotice(result.sources)}</p></Alert>}
+          {result.assessmentStatus === 'insufficient_data' && <Alert tone="info" data-testid="insufficient-notice"><p>Não há evidência suficiente para calcular reputação.</p></Alert>}
+        </Card>
+        <Card>
+          <CardHeader title="Fontes consultadas" />
+          <SourceGroups sources={result.sources} />
+        </Card>
+      </div>
+    </div>}
   </div>;
 }
 
