@@ -1,9 +1,9 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { api, type WatchlistItem } from '../../lib/api';
-import { setSessionToken } from '../../lib/session';
-import RequireSession from '../../components/RequireSession';
+import { api, type WatchlistItem } from '@/lib/api';
+import { setSessionToken } from '@/lib/session';
+import RequireSession from '@/components/RequireSession';
 function WatchlistContent() {
   const [items, setItems] = useState<WatchlistItem[]>([]);
   const [error, setError] = useState('');
