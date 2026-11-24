@@ -83,7 +83,7 @@ Entregue em seis PRs, um por sub-issue. Cada requisito tem um ID para ser citado
 Entrada:
 
 - **F4.1** Campo único. O tipo é detectado enquanto o usuário digita e mostrado num seletor (IP / Domínio / Hash) que continua editável. A detecção é uma função pura em `lib/`:
-  - IPv4 (quatro octetos) ou texto com `:` sem esquema de URL → IP;
+  - IPv4 (quatro octetos) ou forma de IPv6 (só dígitos hexadecimais, `:` e `.`, com ao menos dois `:`, colchetes opcionais), sem esquema de URL → IP. `host:porta` e outros textos com um só `:` não são IP;
   - 32, 40 ou 64 caracteres hexadecimais → hash;
   - demais → domínio.
   Escolher o tipo manualmente prevalece até o campo ser alterado de novo.

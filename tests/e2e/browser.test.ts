@@ -61,7 +61,7 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
     await until(async () => { if (chromeError) throw chromeError; return endpoint; }, 15000);
     socket = new WebSocket(endpoint);
     await new Promise<void>((resolve, reject) => { socket!.addEventListener('open', () => resolve(), { once: true }); socket!.addEventListener('error', () => reject(new Error('CDP connection failed')), { once: true }); });
-    const lookupRequests: { hasBearer: boolean }[] = [];
+    const lookupRequests: { hasBearer: boolean; path: string }[] = [];
     let id = 0;
     let sessionId: string | undefined;
     const pending = new Map<number, { resolve: (value: Record<string, any>) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> }>();
@@ -69,7 +69,7 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
       const message = JSON.parse(String(event.data));
       if (message.method === 'Network.requestWillBeSent' && message.params.request.method === 'GET' && message.params.request.url.startsWith(`${backend.url}/api/lookup/`)) {
         const header = Object.entries(message.params.request.headers).find(([name]) => name.toLowerCase() === 'authorization')?.[1];
-        lookupRequests.push({ hasBearer: typeof header === 'string' && header.startsWith('Bearer ') });
+        lookupRequests.push({ hasBearer: typeof header === 'string' && header.startsWith('Bearer '), path: new URL(message.params.request.url).pathname });
       }
       const operation = pending.get(message.id);
       if (operation) { pending.delete(message.id); clearTimeout(operation.timer); if (message.error) operation.reject(new Error(message.error.message)); else operation.resolve(message.result); }
@@ -104,7 +104,16 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
     const submitLogin = async () => evaluate(`document.querySelector('form.auth-form button[type="submit"]').click()`);
     const selectedTab = () => evaluate(`document.querySelector('[role="tablist"] [role="tab"][aria-selected="true"]')?.textContent`);
     const waitForLogin = () => until(async () => await evaluate(`location.pathname === '/login' && Boolean(document.querySelector('#email'))`));
+    // F4.9: the screen shows "Consulta nova"/"Do cache"; the raw origin stays in data-source.
+    const lookupSource = () => evaluate(`document.querySelector('[data-testid="lookup-source"]')?.dataset.source ?? null`);
+    const watchStatus = () => evaluate(`(() => { const b = document.querySelector('[data-testid="watchlist-status"]'); return b ? { text: b.textContent, disabled: b.disabled } : null; })()`);
+    // F4.3: the sidebar shortcuts pre-select the type.
+    const navigateToType = async (type: string) => {
+      await evaluate(`document.querySelector('a.sidebar-link[href="/lookup?type=${type}"]').click()`);
+      await until(async () => await evaluate(`location.pathname === '/lookup' && location.search === '?type=${type}'`));
+    };
     const waitForLookup = () => until(async () => await evaluate(`location.pathname === '/lookup' && Boolean(document.querySelector('[aria-label="Indicador"]'))`));
+    const text = (selector: string): Promise<string> => evaluate(`document.querySelector(${JSON.stringify(selector)})?.textContent ?? ''`);
     const email = `browser-${Date.now()}@example.com`;
     await navigate('/login');
     // F3.1/F3.2: login and sign-up are tabs; the password can be shown and hidden again.
@@ -142,17 +151,31 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
     await fill('[aria-label="Indicador"]', '8.8.8.8'); await button('Analisar');
     await until(async () => await evaluate(`document.querySelector('[data-testid="lookup-result"]') !== null`));
     assert.equal(await evaluate(`document.querySelector('[data-testid="threat-score"]').textContent`), '75');
-    assert.equal(await evaluate(`document.querySelector('[data-testid="lookup-source"]').textContent`), 'api');
+    assert.equal(await lookupSource(), 'api');
+    assert.equal(await text('[data-testid="lookup-source"]'), 'Consulta nova');
+    // F4.6/F4.7: score band and Portuguese label/description; F4.8 coverage as a bar.
+    assert.match(await text('[data-testid="risk-label"]'), /^Risco (baixo|suspeito|alto|crítico)$/);
+    assert.ok((await text('[data-testid="risk-description"]')).length > 0);
+    assert.match(await text('[data-testid="coverage"]'), /Cobertura de evidências\d+%/);
+    // F4.10: sources grouped by state; not applicable ones are collapsed.
+    assert.equal(await evaluate(`document.querySelector('[data-testid="lookup-result"] [data-group="not_applicable"]')?.tagName`), 'DETAILS');
     assert.equal(calls.length, 6);
-    const text = (selector: string) => evaluate(`document.querySelector(${JSON.stringify(selector)})?.textContent ?? ''`);
     assert.match(await text('[data-testid="source-ABUSEIPDB"]'), /AbuseIPDB.*Consultada.*Confiança de abuso: 80%.*Denúncias \(90 dias\): 42.*País: US/);
     assert.match(await text('[data-testid="source-VIRUSTOTAL"]'), /VirusTotal.*Consultada.*Detecções maliciosas: 8 de 10 motores/);
     assert.match(await text('[data-testid="source-URLSCAN"]'), /Não aplicável/);
     await button('Analisar');
-    await until(async () => await evaluate(`document.querySelector('[data-testid="lookup-source"]')?.textContent === 'cache'`));
+    await until(async () => await lookupSource() === 'cache');
     assert.equal(calls.length, 6);
+    // The button is busy while the watchlist is checked (F4.13); a disabled button ignores clicks.
+    await until(async () => { const status = await watchStatus(); return status?.text === 'Adicionar à Watchlist' && !status.disabled; });
     await button('Adicionar à Watchlist');
     await until(async () => await evaluate(`document.body.textContent.includes('Indicador adicionado à watchlist.')`));
+    // F4.13: once listed, the button says so, and a new lookup of the same indicator keeps that state.
+    assert.deepEqual(await watchStatus(), { text: 'Na watchlist', disabled: true });
+    const beforeRepeat = lookupRequests.length;
+    await button('Analisar');
+    await until(async () => lookupRequests.length > beforeRepeat && await lookupSource() === 'cache' && (await watchStatus())?.text === 'Na watchlist');
+    assert.equal(calls.length, 6);
     await clientNavigate('/dashboard');
     await until(async () => await evaluate(`document.querySelector('[data-testid="watchlist-item"]')?.textContent.includes('8.8.8.8')`));
     await button('Remover');
@@ -174,18 +197,22 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
       assert.equal(await evaluate(`document.querySelector('[data-testid="threat-score"]')`), null);
       process.env.VIRUSTOTAL_API_KEY = 'test-only-key';
       responses.set('www.virustotal.com', () => json({}, 429, { 'Retry-After': '120' }));
-      await evaluate(`(() => { const tab = [...document.querySelectorAll('button')].find(b => b.textContent === 'DOMAIN'); tab.click(); })()`);
-      await until(async () => await evaluate(`location.search === '?type=domain'`));
+      await navigateToType('domain');
+      assert.equal(await evaluate(`document.querySelector('input[name="indicator-type"]:checked').value`), 'domain');
       await fill('[aria-label="Indicador"]', 'limited.example.com'); await button('Analisar');
       await until(async () => await evaluate(`document.querySelector('[role="alert"]')?.textContent === 'Limite de consultas do provedor atingido. Tente novamente em 120 s.'`));
       assert.match(await text('[data-testid="lookup-error"] [data-testid="source-VIRUSTOTAL"]'), /Limite de consultas — tente em 120 s/);
+      // F4.5: with Retry-After the button is disabled and counts down.
+      assert.deepEqual(await evaluate(`(() => { const b = document.querySelector('[data-testid="lookup-submit"]'); return [b.disabled, /^Aguarde (\\d+ s|\\d+ min)$/.test(b.textContent)]; })()`), [true, true]);
       assert.equal(calls.length, 7);
     } finally {
       responses.delete('www.virustotal.com'); resetHttpState();
       for (const [key, value] of Object.entries(savedKeys)) if (value === undefined) delete process.env[key]; else process.env[key] = value;
     }
     const baseline = calls.length;
-    await button('IP'); await until(async () => await evaluate(`location.search === '?type=ip'`));
+    // The countdown belongs to the lookup screen: leaving it and coming back through the sidebar starts fresh.
+    await clientNavigate('/dashboard');
+    await navigateToType('ip');
     assert.ok(lookupRequests.length >= 3 && lookupRequests.every(request => request.hasBearer), 'Every browser lookup must carry Bearer');
     assert.equal(await evaluate(`Object.keys(localStorage).some(key => /^[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$/.test(localStorage.getItem(key) || ''))`), false);
     // Rotate only the runtime test secret to invalidate the current token.
@@ -205,10 +232,27 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
     assert.equal(await evaluate(`new URLSearchParams(location.search).get('next')`), '/lookup?type=ip&q=8.8.8.8');
     await delay(400);
     await fill('#email', email); await fill('#password', 'BrowserTestOnly-2026!'); await submitLogin(); await waitForLookup();
-    await until(async () => await evaluate(`document.querySelector('[data-testid="lookup-source"]')?.textContent === 'cache'`));
+    await until(async () => await lookupSource() === 'cache');
     assert.equal(await evaluate(`document.querySelector('[aria-label="Indicador"]').value`), '8.8.8.8');
     assert.equal(lookupRequests.filter(request => request.hasBearer).length, lookupRequests.length);
     assert.equal(calls.length, baseline);
+    // F4.1/F4.2: a defanged URL is detected as a domain and sent as its host, and the screen says so.
+    await fill('[aria-label="Indicador"]', 'hxxps://Exemplo[.]com/path');
+    assert.equal(await evaluate(`document.querySelector('input[name="indicator-type"]:checked').value`), 'domain');
+    assert.equal(await text('[data-testid="sent-value"]'), 'Consultando como: exemplo.com');
+    await button('Analisar');
+    await until(async () => await lookupSource() === 'api' && await text('[data-testid="lookup-result"] .result-indicator code') === 'exemplo.com');
+    assert.equal(lookupRequests.at(-1)?.path, '/api/lookup/domain/exemplo.com');
+    // F4.14: recent lookups of this session (the expired session's list was dropped), newest first; a click repeats it.
+    assert.deepEqual(await evaluate(`[...document.querySelectorAll('[data-testid="recent-lookups"] code')].map(code => code.textContent)`), ['exemplo.com', '8.8.8.8']);
+    const beforeRecent = lookupRequests.length;
+    await evaluate(`[...document.querySelectorAll('[data-testid="recent-lookups"] button')].find(b => b.textContent.includes('8.8.8.8')).click()`);
+    await until(async () => lookupRequests.length > beforeRecent && await lookupSource() === 'cache');
+    assert.equal(lookupRequests.at(-1)?.path, '/api/lookup/ip/8.8.8.8');
+    // Acceptance 5: a SHA-256 pasted with the navigation on "IP" is detected as a hash.
+    await navigateToType('ip');
+    await fill('[aria-label="Indicador"]', 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
+    assert.equal(await evaluate(`document.querySelector('input[name="indicator-type"]:checked').value`), 'hash');
   } catch (error) { throw new Error(`${String(error)}\nFrontend output:\n${frontendLog}`); }
   finally { socket?.close(); await stop(chrome); await stop(frontend); await backend.close(); await rm(directory, { recursive: true, force: true }); }
 });

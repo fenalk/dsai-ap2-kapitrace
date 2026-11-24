@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Icon, { type IconName } from '@/components/ui/Icon';
 import { ButtonLink } from '@/components/ui/Button';
 import { hasSession, serverSessionSnapshot, subscribeSession } from '@/lib/session';
+import { detectIndicatorType } from '@/lib/indicator';
 
 const features: { icon: IconName; title: string; description: string; tone: string }[] = [
   { icon: 'globe', title: 'IP Reputation', description: 'Análise completa com AbuseIPDB, VirusTotal, Shodan e GreyNoise combinados em um score unificado.', tone: 'cyan' },
@@ -28,7 +29,8 @@ export default function Home() {
     event.preventDefault();
     const indicator = query.trim();
     if (!indicator) return;
-    const type = indicator.includes(':') || /^\d+\.\d+\.\d+\.\d+$/.test(indicator) ? 'ip' : /^(?:[a-f0-9]{32}|[a-f0-9]{40}|[a-f0-9]{64})$/i.test(indicator) ? 'hash' : 'domain';
+    // Same detection as /lookup (F4.1); /lookup also normalizes the value before sending it (F4.2).
+    const type = detectIndicatorType(indicator);
     router.push(`/lookup?type=${type}&q=${encodeURIComponent(indicator)}`);
   }
   return (
