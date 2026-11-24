@@ -1,10 +1,10 @@
 # SPEC — Integração real de Threat Intelligence
 
 Data: 2026-10-06
-Status: implementada (`8f7c94c`, `da1a7d7`, `798e1d1`). Texto original: "especificação aprovada para implementação pela solicitação do usuário; implementação pendente." Status atualizado em 2026-11-19 pela [SPEC-FDE 005](SPEC-FDE/005-governanca-specs.md).
+Status: implementada (`8f7c94c`, `da1a7d7`, `798e1d1`). Texto original: "especificação aprovada para implementação pela solicitação do usuário; implementação pendente." Status atualizado em 2026-11-19 pela [SPEC-FDE 005](SPEC-FDE/2026-11-19-governanca-specs.md).
 Agente: Codex (GPT-6)
 
-> **Precedência:** esta SPEC complementa e substitui partes da [2026-10-01-threat-analyzer.md](2026-10-01-threat-analyzer.md) (§3 ThreatScore e §4.2 resposta do lookup). As menções a SQLite (§1 e §2) foram substituídas pela [2026-10-06-supabase-postgresql-migration.md](2026-10-06-supabase-postgresql-migration.md): o banco é PostgreSQL. O acesso anônimo ao lookup previsto em §8 ("consultas públicas") foi substituído pela [2026-10-06-auth-and-middleware-reactivation.md](2026-10-06-auth-and-middleware-reactivation.md). A regra de `partial` (§7) foi alterada pela decisão D1 da [SPEC-FDE 001](SPEC-FDE/001-consulta-indicadores-seguranca.md) (opção B, 2026-11-24): fonte `not_configured` não torna o resultado parcial.
+> **Precedência:** esta SPEC complementa e substitui partes da [2026-10-01-threat-analyzer.md](2026-10-01-threat-analyzer.md) (§3 ThreatScore e §4.2 resposta do lookup). As menções a SQLite (§1 e §2) foram substituídas pela [2026-10-06-supabase-postgresql-migration.md](2026-10-06-supabase-postgresql-migration.md): o banco é PostgreSQL. O acesso anônimo ao lookup previsto em §8 ("consultas públicas") foi substituído pela [2026-10-06-auth-and-middleware-reactivation.md](2026-10-06-auth-and-middleware-reactivation.md). A regra de `partial` (§7) foi alterada pela decisão D1 da [SPEC-FDE 001](SPEC-FDE/2026-11-18-consulta-indicadores-seguranca.md) (opção B, 2026-11-24): fonte `not_configured` não torna o resultado parcial.
 
 ## 1. Escopo e precedência
 

@@ -1,6 +1,6 @@
 # SPEC-2026-10-01: Threat Intelligence & Unified ThreatScore Engine
 
-- **Status:** implementada (`d046996`, `23be8bc`), **substituída parcialmente** pelas SPECs de 2026-10-06. Cabeçalho acrescentado em 2026-11-19 pela [SPEC-FDE 005](SPEC-FDE/005-governanca-specs.md); o corpo abaixo é o texto original.
+- **Status:** implementada (`d046996`, `23be8bc`), **substituída parcialmente** pelas SPECs de 2026-10-06. Cabeçalho acrescentado em 2026-11-19 pela [SPEC-FDE 005](SPEC-FDE/2026-11-19-governanca-specs.md); o corpo abaixo é o texto original.
 
 > **Precedência — leia antes de usar esta SPEC**
 >

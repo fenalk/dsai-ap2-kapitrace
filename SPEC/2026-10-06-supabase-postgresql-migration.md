@@ -1,7 +1,7 @@
 # SPEC — Migração SQLite para PostgreSQL/Supabase
 
 Data real: 2026-10-06
-Status: implementada (`5617970`, `f7b6901`, `ab8e372`; upstream PR #8). Substitui o SQLite em todas as SPECs anteriores. Status acrescentado em 2026-11-19 pela [SPEC-FDE 005](SPEC-FDE/005-governanca-specs.md).
+Status: implementada (`5617970`, `f7b6901`, `ab8e372`; upstream PR #8). Substitui o SQLite em todas as SPECs anteriores. Status acrescentado em 2026-11-19 pela [SPEC-FDE 005](SPEC-FDE/2026-11-19-governanca-specs.md).
 Agente: Codex (GPT-6)
 Branch: stagging (grafia solicitada pelo usuário)
 

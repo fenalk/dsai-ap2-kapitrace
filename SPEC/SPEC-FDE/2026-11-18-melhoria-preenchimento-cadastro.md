@@ -5,7 +5,7 @@
 - **Status:** proposta (aguardando aprovação; issue #4)
 - **Agente:** Claude Code (Claude Opus 5.5)
 - **Origem:** diagnóstico FDE (issue #1, seção "Ajustes na aplicação": melhorar o preenchimento na tela de cadastro)
-- **SPECs relacionadas:** `SPEC/2026-10-06-auth-and-middleware-reactivation.md`, `SPEC/SPEC-FDE/002-melhoria-mensagem-erro-login.md` (mesmo componente e mesmo padrão de erro)
+- **SPECs relacionadas:** `SPEC/2026-10-06-auth-and-middleware-reactivation.md`, `SPEC/SPEC-FDE/2026-11-18-melhoria-mensagem-erro-login.md` (mesmo componente e mesmo padrão de erro)
 
 ## Contexto
 

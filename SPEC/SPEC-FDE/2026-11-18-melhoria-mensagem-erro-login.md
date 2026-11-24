@@ -5,7 +5,7 @@
 - **Status:** proposta (aguardando aprovação; issue #3)
 - **Agente:** Claude Code (Claude Opus 5.5)
 - **Origem:** diagnóstico FDE (issue #1): "quando errei a senha de propósito, o design da mensagem de erro não é visualmente bom"
-- **SPECs relacionadas:** `SPEC/2026-10-06-auth-and-middleware-reactivation.md`, `SPEC/SPEC-FDE/001-consulta-indicadores-seguranca.md` (compartilha a mudança em `lib/api.ts`)
+- **SPECs relacionadas:** `SPEC/2026-10-06-auth-and-middleware-reactivation.md`, `SPEC/SPEC-FDE/2026-11-18-consulta-indicadores-seguranca.md` (compartilha a mudança em `lib/api.ts`)
 
 ## Contexto
 

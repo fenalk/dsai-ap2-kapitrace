@@ -56,7 +56,7 @@ SPEC/
   README.md               # ÍNDICE: status, precedência, template e formato dos trailers
   2026-09-30-*.md         # 13 stubs com status backlog, SEM requisitos
   2026-10-0*.md           # SPECs datadas originais (parcialmente substituídas; ver índice)
-  SPEC-FDE/NNN-*.md       # SPECs novas, numeradas (001–005)
+  SPEC-FDE/AAAA-MM-DD-*.md # SPECs novas, datadas pela criação; ID SPEC-FDE NNN no cabeçalho (001–006)
 FDE/                      # notas de investigação da responsável (não editar)
 prompts/sessoes/          # prompts literais e logs brutos de execução
 metrics/                  # relatórios cloc
@@ -126,7 +126,7 @@ npm --prefix src/frontend run lint && npm --prefix src/frontend run build
 ## 8. Regras para agentes
 
 - **Trabalhe guiado por SPEC**: mudanças de comportamento exigem uma SPEC commitada antes do código. Antes de começar, consulte [`SPEC/README.md`](SPEC/README.md) para saber o que está vigente: as SPECs de 2026-10-01/2026-10-06 têm trechos substituídos, e os stubs de 2026-09-30 **não são requisitos**.
-- SPEC nova: `SPEC/SPEC-FDE/NNN-<slug>.md` (próximo número livre), com o cabeçalho do template de `SPEC/README.md`. Não renomeie SPECs existentes e não preencha stubs de 2026-09-30. Para tratar um desses temas, crie uma SPEC nova e marque o stub como `substituída`.
+- SPEC nova: `SPEC/SPEC-FDE/AAAA-MM-DD-<slug>.md` (data de criação), com o próximo ID livre `SPEC-FDE NNN` no cabeçalho do template de `SPEC/README.md`. Não renomeie SPECs existentes (a renomeação de 2026-11-24 foi exceção pedida pela responsável) e não preencha stubs de 2026-09-30. Para tratar um desses temas, crie uma SPEC nova e marque o stub como `substituída`.
 - Ao mesclar a implementação, atualize o **status** no cabeçalho da SPEC e no índice (`proposta → aprovada → implementada → validada`), citando PR/commits e pendências que restarem.
 - Commits usam Conventional Commits com trailers `Agent:`, `Spec:` e `Co-Authored-By:` **no mesmo parágrafo final, sem linha em branco entre eles**. Com linha em branco, o Git não os reconhece. `Agent:` segue `<Ferramenta>-<Modelo>` (ex.: `Claude-Code-Opus-5.5`). Sem SPEC (só documentação): `Spec: none (<motivo>)`. Conferência: `git log --format='%h %(trailers:key=Agent,key=Spec)'`.
 - Rode `npm run check:secrets` antes de commitar; nunca imprime valores.

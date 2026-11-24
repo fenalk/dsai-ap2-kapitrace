@@ -118,7 +118,7 @@ npm run dev            # http://localhost:3000 (outra porta: npm run dev -- --po
 
 ### Telas e percurso do frontend
 
-Especificação: [SPEC-FDE 006](SPEC/SPEC-FDE/006-experiencia-frontend.md). O percurso completo funciona no desktop e no celular: landing → cadastro/login → consulta → resultado → watchlist → nova consulta → sair.
+Especificação: [SPEC-FDE 006](SPEC/SPEC-FDE/2026-11-24-experiencia-frontend.md). O percurso completo funciona no desktop e no celular: landing → cadastro/login → consulta → resultado → watchlist → nova consulta → sair.
 
 | Tela | O que oferece |
 | --- | --- |
@@ -157,7 +157,7 @@ Chaves vazias desabilitam a fonte com estado explícito. IPInfo usa o endpoint l
 
 Somente a URL do backend fica em `NEXT_PUBLIC_API_BASE_URL`. Todas as variantes `.env.*` estão ignoradas, com exceção dos exemplos sem segredos. Não coloque credenciais no frontend, Git ou registros de sessão. `npm run check:secrets` verifica conteúdo no Git por arquivos de ambiente proibidos e padrões conhecidos de segredos; é uma barreira adicional, não um detector universal. JWT precisa de pelo menos 32 caracteres; cadastro público não concede `admin`.
 
-**Ativando AbuseIPDB e VirusTotal** ([SPEC-FDE 001](SPEC/SPEC-FDE/001-consulta-indicadores-seguranca.md)):
+**Ativando AbuseIPDB e VirusTotal** ([SPEC-FDE 001](SPEC/SPEC-FDE/2026-11-18-consulta-indicadores-seguranca.md)):
 
 1. Local: preencha só `ABUSEIPDB_API_KEY` e `VIRUSTOTAL_API_KEY` em `src/backend/.env` e reinicie o backend. O log de inicialização mostra apenas os **nomes** das fontes habilitadas, por exemplo `Threat intelligence providers configured: ABUSEIPDB, VIRUSTOTAL` (nunca valores).
 2. Produção: cadastre as mesmas variáveis como variáveis de ambiente do **host do backend** (painel do provedor de hospedagem), nunca no projeto do frontend nem em `NEXT_PUBLIC_*`. Reimplante o backend e confira o mesmo log.
