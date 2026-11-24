@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { Suspense, useRef, useState, type FormEvent } from 'react';
+import { Suspense, useEffect, useEffectEvent, useRef, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api, ApiError } from '@/lib/api';
 import { describeDetails, partialNotice, providerName, requestLimitMessage, sourceTone, statusText, unavailableMessage, validationMessage, type LookupType, type SourceInfo } from '@/lib/lookup-messages';
@@ -38,16 +38,33 @@ function LookupContent() {
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
   const generation = useRef(0);
-  async function search(event: FormEvent) {
-    event.preventDefault();
+  const autoSearched = useRef<string | null>(null);
+  async function runSearch(indicator: string) {
     const current = ++generation.current;
     setError(null); setNotice(''); setResult(null); setLoading(true);
     try {
-      const data = await api<LookupResult>(`/api/lookup/${type}/${encodeURIComponent(query.trim())}`);
+      const data = await api<LookupResult>(`/api/lookup/${type}/${encodeURIComponent(indicator.trim())}`);
       if (current === generation.current) setResult(data);
     } catch (failure) { if (current === generation.current) setError(lookupError(failure, type)); }
     finally { if (current === generation.current) setLoading(false); }
   }
+  function search(event: FormEvent) {
+    event.preventDefault();
+    void runSearch(query);
+  }
+  // F2.2: an address with ?q= (landing, login redirect, watchlist) runs the lookup once per type+indicator.
+  const searchFromAddress = useEffectEvent((indicator: string) => {
+    setQuery(indicator);
+    void runSearch(indicator);
+  });
+  const addressQuery = params.get('q')?.trim() ?? '';
+  useEffect(() => {
+    if (!addressQuery) return;
+    const key = `${type}:${addressQuery}`;
+    if (autoSearched.current === key) return;
+    autoSearched.current = key;
+    searchFromAddress(addressQuery);
+  }, [type, addressQuery]);
   async function addToWatchlist() {
     if (!result) return;
     setAdding(true); setError(null); setNotice('');
@@ -71,7 +88,7 @@ function LookupContent() {
       {result.partial && <p role="status" data-testid="partial-notice">{partialNotice(result.sources)}</p>}
       {result.assessmentStatus === 'insufficient_data' && <p>Não há evidência suficiente para calcular reputação.</p>}
       <p>{result.analysis?.riskDescription}</p>
-    </div><div className="card"><button className="btn btn-primary" onClick={addToWatchlist} disabled={adding}>{adding ? 'Adicionando…' : 'Adicionar à Watchlist'}</button><Link className="btn btn-ghost" href="/dashboard">Gerenciar watchlist</Link><Link className="btn btn-ghost" href="/login">Entrar</Link></div></div></div>}
+    </div><div className="card"><button className="btn btn-primary" onClick={addToWatchlist} disabled={adding}>{adding ? 'Adicionando…' : 'Adicionar à Watchlist'}</button><Link className="btn btn-ghost" href="/dashboard">Gerenciar watchlist</Link></div></div></div>}
   </div>;
 }
 

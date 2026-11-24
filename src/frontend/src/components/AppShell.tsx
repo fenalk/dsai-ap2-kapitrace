@@ -1,20 +1,53 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
+import { activeNavKey, type NavKey } from '@/lib/navigation';
 import Icon, { type IconName } from './ui/Icon';
+import UserMenu from './UserMenu';
 
-interface NavItem { label: string; href: string; icon: IconName; section: string }
+interface NavItem { key: NavKey; label: string; href: string; icon: IconName; section: string }
 
 const navItems: NavItem[] = [
-  { label: 'Watchlist', href: '/dashboard', icon: 'eye', section: 'Principal' },
-  { label: 'IP Lookup', href: '/lookup?type=ip', icon: 'globe', section: 'Inteligência' },
-  { label: 'Domain Lookup', href: '/lookup?type=domain', icon: 'link', section: 'Inteligência' },
-  { label: 'Hash Lookup', href: '/lookup?type=hash', icon: 'hash', section: 'Inteligência' },
+  { key: 'watchlist', label: 'Watchlist', href: '/dashboard', icon: 'eye', section: 'Principal' },
+  { key: 'ip', label: 'Consultar IP', href: '/lookup?type=ip', icon: 'globe', section: 'Consultas' },
+  { key: 'domain', label: 'Consultar domínio', href: '/lookup?type=domain', icon: 'link', section: 'Consultas' },
+  { key: 'hash', label: 'Consultar hash', href: '/lookup?type=hash', icon: 'hash', section: 'Consultas' },
 ];
-const sections = ['Principal', 'Inteligência'];
+const sections = ['Principal', 'Consultas'];
 const DESKTOP_QUERY = '(min-width: 768px)';
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function NavLinks({ active }: { active: NavKey | null }) {
+  return (
+    <nav className="sidebar-nav" aria-label="Seções">
+      {sections.map(section => (
+        <div key={section}>
+          <div className="sidebar-section-label">{section}</div>
+          {navItems.filter(item => item.section === section).map(item => (
+            <Link
+              key={item.key}
+              href={item.href}
+              title={item.label}
+              className={item.key === active ? 'sidebar-link active' : 'sidebar-link'}
+              aria-current={item.key === active ? 'page' : undefined}
+            >
+              <Icon name={item.icon} />
+              <span className="sidebar-link-label">{item.label}</span>
+            </Link>
+          ))}
+        </div>
+      ))}
+    </nav>
+  );
+}
+
+/** Active item depends on ?type= (F2.3); reading search params needs its own Suspense boundary. */
+function ActiveNavLinks() {
+  const pathname = usePathname();
+  const params = useSearchParams();
+  return <NavLinks active={activeNavKey(pathname, params.get('type'))} />;
+}
 
 /**
  * Authenticated layout (SPEC-FDE 006, F1.5): fixed sidebar on desktop, icon-only sidebar on tablet,
@@ -86,24 +119,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        <nav className="sidebar-nav">
-          {sections.map(section => (
-            <div key={section}>
-              <div className="sidebar-section-label">{section}</div>
-              {navItems.filter(item => item.section === section).map(item => (
-                <Link key={item.href} href={item.href} title={item.label} className={`sidebar-link ${pathname === item.href ? 'active' : ''}`}>
-                  <Icon name={item.icon} />
-                  <span className="sidebar-link-label">{item.label}</span>
-                </Link>
-              ))}
-            </div>
-          ))}
-        </nav>
-
-        <div className="sidebar-footer">
-          <span className="status-dot" aria-hidden="true" />
-          <span className="sidebar-footer-text">Fontes conforme configuração</span>
-        </div>
+        <Suspense fallback={<NavLinks active={pathname === '/dashboard' ? 'watchlist' : null} />}>
+          <ActiveNavLinks />
+        </Suspense>
       </aside>
 
       {open && <div className="drawer-backdrop" aria-hidden="true" onClick={() => close(false)} />}
@@ -130,7 +148,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           </div>
           <div className="topbar-actions">
             <Link href="/dashboard" className="topbar-secondary">Watchlist</Link>
-            <Link href="/login">Entrar</Link>
+            <UserMenu />
           </div>
         </header>
         <main id="conteudo" tabIndex={-1}>{children}</main>
