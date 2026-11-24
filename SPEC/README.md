@@ -28,6 +28,7 @@ Mantido conforme a [SPEC-FDE 005](SPEC-FDE/005-governanca-specs.md). Ao mesclar 
 | SPEC-FDE 003 | [SPEC-FDE/003-melhoria-preenchimento-cadastro.md](SPEC-FDE/003-melhoria-preenchimento-cadastro.md) | proposta | #4 | — | Depende da 002. Decisões D1–D4 pendentes |
 | SPEC-FDE 004 | [SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md](SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md) | implementada | #8 | PRs #9 (SPEC), #10 e #11 | Conferência registrada do Definition of Done (E4, cenários "PR real") pendente |
 | SPEC-FDE 005 | [SPEC-FDE/005-governanca-specs.md](SPEC-FDE/005-governanca-specs.md) | implementada | — | PRs #15 e #16 (E5) | Só governança; nenhum requisito muda |
+| SPEC-FDE 006 | [SPEC-FDE/006-experiencia-frontend.md](SPEC-FDE/006-experiencia-frontend.md) | aprovada | #35 (#36–#42) | — | Substitui o stub `2026-09-30-frontend-architecture.md`. Não altera os textos de login da 002/003 |
 
 "upstream" é o repositório de origem `hug0mgs/dsai-ap1-kapitrace`. Os demais números são issues/PRs deste repositório.
 
@@ -60,6 +61,7 @@ Legenda: ✅ concluída · 🔶 em andamento ou com pendência · ⏳ SPEC exist
 | 2.1 | #3 **SPEC-FDE 002**: mensagens de erro no login | ⏳ (`proposta`) | aprovação | `ApiError` de `lib/api.ts` já existe (001). Cria as classes de erro reutilizadas pela 003. |
 | 2.2 | #4 **SPEC-FDE 003**: preenchimento do cadastro | ⏳ (`proposta`) | 2.1; decisões D1–D4 | Mesmo componente da 002 (`login/page.tsx`): implementar depois dela para evitar conflito. Resolver junto a divergência da regra de senha (D4). |
 | 2.3 | #21 **Sessão persistente** (usar `/api/auth/refresh`) | ✏️ ❓ | confirmação do cliente | Hoje recarregar a página faz logout. A sessão só em memória foi uma regra de segurança do cliente: confirmar com ele antes de especificar. |
+| 2.4 | #35 **SPEC-FDE 006**: experiência do frontend (fundação visual, navegação, login visual, consulta, watchlist, acessibilidade) | ⏳ (`aprovada`) | — | Seis PRs, uma por sub-issue (#37–#42). Login: só a parte visual, sem conflitar com 2.1/2.2. Não inclui a sessão persistente (2.3). |
 
 ### Fase 3 — Medir e dar valor
 
@@ -89,17 +91,19 @@ Cada item é uma SPEC nova a escrever (✏️), sem ordem obrigatória entre ele
 - #33 **Demais provedores** (Shodan, GreyNoise, URLScan, OTX, IPInfo) e **modificadores do ThreatScore**: o código já existe e falta ativar com evidência. Mudar o score exige atualizar `threat-score.service.ts`, os testes e a SPEC.
 - #34 **Integração com SIEM.**
 
-Os stubs que sobram (`backend-api-design`, `database-schema`, `domain-reputation`, `external-apis-integration`, `frontend-architecture`, `hash-reputation`, `ip-reputation`, `visao-geral`) já estão cobertos pelas SPECs de 2026-10-01/2026-10-06 e pela 001. Não há trabalho previsto para eles; podem ser marcados como `substituída` numa revisão futura.
+Os stubs que sobram (`backend-api-design`, `database-schema`, `domain-reputation`, `external-apis-integration`, `hash-reputation`, `ip-reputation`, `visao-geral`) já estão cobertos pelas SPECs de 2026-10-01/2026-10-06 e pela 001. Não há trabalho previsto para eles; podem ser marcados como `substituída` numa revisão futura.
 
 ## Backlog (stubs sem requisitos)
 
-Arquivos criados no scaffolding de 2026-09-30, com status `backlog`: `auth-rbac`, `backend-api-design`, `database-schema`, `deployment-strategy`, `domain-reputation`, `email-reputation`, `external-apis-integration`, `frontend-architecture`, `hash-reputation`, `ip-reputation`, `threat-dashboard`, `visao-geral`, `watchlist-alerts` (todos `2026-09-30-<nome>.md`).
+Arquivos criados no scaffolding de 2026-09-30, com status `backlog`: `auth-rbac`, `backend-api-design`, `database-schema`, `deployment-strategy`, `domain-reputation`, `email-reputation`, `external-apis-integration`, `hash-reputation`, `ip-reputation`, `threat-dashboard`, `visao-geral`, `watchlist-alerts` (todos `2026-09-30-<nome>.md`).
+
+Já substituídos por SPEC nova: `frontend-architecture` → [SPEC-FDE 006](SPEC-FDE/006-experiencia-frontend.md).
 
 Para trabalhar num desses temas, escreva uma SPEC nova em `SPEC/SPEC-FDE/` (seção abaixo) e marque o stub como `substituída` apontando para ela. Não preencha o stub de 2026-09-30, porque a data do nome não corresponderia à da especificação.
 
 ## Como criar uma SPEC nova
 
-- **Local e nome:** `SPEC/SPEC-FDE/NNN-<slug-em-kebab-case>.md`, com `NNN` sequencial (próximo: `006`). A data fica no cabeçalho, não no nome.
+- **Local e nome:** `SPEC/SPEC-FDE/NNN-<slug-em-kebab-case>.md`, com `NNN` sequencial (próximo: `007`). A data fica no cabeçalho, não no nome.
 - **Ordem:** a SPEC é commitada (e, se possível, mesclada numa PR própria) antes do código que a implementa.
 - **Não renomeie SPECs existentes:** trailers `Spec:` já gravados no histórico apontam para os caminhos atuais.
 
