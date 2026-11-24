@@ -792,6 +792,12 @@ main:focus { outline: none; }
 
 .lookup-wait { text-align: center; color: var(--text-muted); font-size: var(--text-sm); }
 
+/* Programmatic focus targets (F6.1): a visible ring even when focus did not come from the keyboard. */
+.focus-target:focus { outline: 2px solid var(--accent); outline-offset: 4px; }
+.result-title { font-size: var(--text-lg); overflow-wrap: anywhere; scroll-margin-top: calc(var(--topbar-h) + var(--space-4)); }
+.result-title code { color: var(--accent); font-size: 0.95em; }
+#lookup-error { scroll-margin-top: calc(var(--topbar-h) + var(--space-4)); }
+
 .result-grid { display: grid; grid-template-columns: minmax(260px, 320px) minmax(0, 1fr); gap: var(--space-4); align-items: start; }
 .result-sidebar, .result-main { display: grid; gap: var(--space-4); min-width: 0; }
 .result-score-card { display: grid; justify-items: center; text-align: center; }

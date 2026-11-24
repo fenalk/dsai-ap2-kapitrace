@@ -17,7 +17,8 @@ interface ToastEntry extends Required<Pick<ToastOptions, 'message' | 'tone' | 'd
 const icons: Record<ToastTone, IconName> = { success: 'check-circle', danger: 'alert-circle', info: 'info' };
 const MAX_TOASTS = 3;
 
-const ToastContext = createContext<((options: ToastOptions) => void) | null>(null);
+interface ToastApi { show: (options: ToastOptions) => number; dismiss: (id: number) => void }
+const ToastContext = createContext<ToastApi | null>(null);
 
 /** Shows short confirmations (role="status", polite) at the bottom right. */
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -28,10 +29,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const show = useCallback((options: ToastOptions) => {
     const entry: ToastEntry = { id: ++nextId.current, message: options.message, tone: options.tone ?? 'success', duration: options.duration ?? 5000, action: options.action };
     setToasts(current => [...current, entry].slice(-MAX_TOASTS));
+    return entry.id;
   }, []);
+  const api = useMemo(() => ({ show, dismiss }), [show, dismiss]);
 
   return (
-    <ToastContext.Provider value={show}>
+    <ToastContext.Provider value={api}>
       {children}
       <div className="toast-region" role="status" aria-live="polite">
         {toasts.map(toast => <ToastItem key={toast.id} toast={toast} onDismiss={dismiss} />)}
@@ -46,7 +49,7 @@ function ToastItem({ toast, onDismiss }: { toast: ToastEntry; onDismiss: (id: nu
     return () => window.clearTimeout(timer);
   }, [toast.id, toast.duration, onDismiss]);
   return (
-    <div className={`toast toast-${toast.tone}`}>
+    <div className={`toast toast-${toast.tone}`} data-testid="toast">
       <Icon name={icons[toast.tone]} />
       <span className="toast-message">{toast.message}</span>
       {toast.action && <button type="button" className="btn btn-ghost btn-sm" onClick={() => { toast.action?.onClick(); onDismiss(toast.id); }}>{toast.action.label}</button>}
@@ -55,7 +58,14 @@ function ToastItem({ toast, onDismiss }: { toast: ToastEntry; onDismiss: (id: nu
   );
 }
 
-export function useToast(): (options: ToastOptions) => void {
-  const show = useContext(ToastContext);
-  return useMemo(() => show ?? (() => { throw new Error('useToast must be used inside <ToastProvider>.'); }), [show]);
+const missingProvider = (): never => { throw new Error('Toast hooks must be used inside <ToastProvider>.'); };
+
+/** Shows a toast and returns its id (for useDismissToast). */
+export function useToast(): (options: ToastOptions) => number {
+  return useContext(ToastContext)?.show ?? missingProvider;
+}
+
+/** Closes a toast before its time, e.g. when its action no longer applies. Unknown ids are ignored. */
+export function useDismissToast(): (id: number) => void {
+  return useContext(ToastContext)?.dismiss ?? missingProvider;
 }
