@@ -860,12 +860,65 @@ details.source-group > summary::marker { color: var(--text-dim); }
 
 .page-content > [role='status'] { color: var(--success); }
 
-/* Watchlist (/dashboard) — legacy markup until F5. */
-[data-testid='watchlist'] { margin-top: var(--space-4); }
-[data-testid='watchlist-item'] { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
-[data-testid='watchlist-item'] > * + * { margin-top: 0; }
-[data-testid='watchlist-item'] code { flex: 1; min-width: 12ch; }
-.page-content > .btn + .btn { margin-left: var(--space-2); }
+/* ═══════════════════════════════════════════
+   Watchlist (/dashboard) — F5
+   ═══════════════════════════════════════════ */
+
+.watchlist-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.type-chip-count { min-width: 1.4rem; padding: 0 0.35rem; border-radius: var(--radius-pill); background: var(--surface-2); color: var(--text-muted); font-family: var(--font-mono); font-size: var(--text-xs); text-align: center; }
+.watchlist-search { position: relative; flex: 1 1 220px; max-width: 360px; }
+.watchlist-search .icon { position: absolute; top: 50%; left: var(--space-3); width: 16px; height: 16px; color: var(--text-dim); transform: translateY(-50%); pointer-events: none; }
+.watchlist-search .input { padding-left: 2.25rem; }
+.watchlist-summary { font-size: var(--text-sm); }
+
+.watchlist-loading { display: grid; gap: var(--space-4); }
+.watchlist-loading-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--space-4); }
+
+.watchlist-card { padding: 0; overflow: hidden; }
+.watchlist-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.watchlist-table th { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--border); background: var(--bg-raised); color: var(--text-muted); font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.06em; text-align: left; text-transform: uppercase; }
+.watchlist-table td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--border); vertical-align: middle; }
+.watchlist-table tbody tr:last-child td { border-bottom: 0; }
+.watchlist-table tbody tr:hover { background: color-mix(in srgb, var(--surface-2) 50%, transparent); }
+.watchlist-type { width: 1%; white-space: nowrap; }
+.watchlist-value code { color: var(--text); overflow-wrap: anywhere; word-break: break-all; }
+.watchlist-date { width: 1%; white-space: nowrap; color: var(--text-muted); }
+.watchlist-actions { width: 1%; white-space: nowrap; text-align: right; }
+.watchlist-actions > * + * { margin-left: var(--space-2); }
+.watchlist-unavailable { font-size: var(--text-xs); }
+
+/* < 768 px: one card per item (F5.1); the same table, laid out as blocks. */
+@media (max-width: 767.98px) {
+  .watchlist-card { padding: 0; background: transparent; border: 0; box-shadow: none; }
+  .watchlist-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .watchlist-table, .watchlist-table tbody { display: block; }
+  .watchlist-table tbody { display: grid; gap: var(--space-3); }
+  .watchlist-table tr {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: 'type date' 'value value' 'actions actions';
+    gap: var(--space-2) var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+  }
+  .watchlist-table tbody tr:hover { background: var(--surface); }
+  .watchlist-table td { display: block; width: auto; padding: 0; border: 0; white-space: normal; }
+  .watchlist-type { grid-area: type; }
+  .watchlist-value { grid-area: value; }
+  .watchlist-date { grid-area: date; justify-self: end; font-size: var(--text-xs); }
+  /* Two classes: must beat ".watchlist-table td { display: block }". */
+  .watchlist-table .watchlist-actions { grid-area: actions; display: flex; flex-wrap: wrap; gap: var(--space-2); text-align: left; }
+  .watchlist-toolbar .type-picker { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; }
+  .watchlist-toolbar .type-chip { justify-content: center; gap: var(--space-1); padding-inline: var(--space-1); }
+  .watchlist-actions > * + * { margin-left: 0; }
+  .watchlist-actions .btn { flex: 1 1 auto; }
+  .watchlist-search { max-width: none; }
+}
+@media (max-width: 399.98px) {
+  .watchlist-toolbar .type-chip { font-size: var(--text-xs); }
+}
 
 @media (max-width: 1023.98px) {
   .result-grid { grid-template-columns: minmax(0, 1fr); }
