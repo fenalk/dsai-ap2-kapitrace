@@ -1,10 +1,18 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import { randomBytes } from 'node:crypto';
 import prisma from '../../shared/prisma';
 import { AuthRequest, JWT_ISSUER, JWT_AUDIENCE } from '../../middleware/auth';
 
 import { jwtSecret } from '../../shared/config';
+import { logRouteError } from '../../shared/error-log';
+
+/** Single bcrypt cost for stored passwords and for the dummy hash, so their timing cannot diverge. */
+const BCRYPT_COST = 10;
+// SPEC-FDE 007, E2: compared when the email does not exist, so both 401 paths take equivalent time.
+// Built from random bytes; no password in code can ever match it.
+const dummyHash = bcrypt.hash(randomBytes(32).toString('hex'), BCRYPT_COST);
 
 /**
  * Validate password security standards:
@@ -51,7 +59,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, BCRYPT_COST);
 
     const user = await prisma.user.create({
       data: {
@@ -67,7 +75,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       userId: user.id
     });
   } catch (error) {
-    console.error('Registration error:', error);
+    logRouteError('auth.register', error);
     res.status(500).json({ error: 'Registration failed' });
   }
 };
@@ -87,6 +95,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     const normalizedEmail = email.trim().toLowerCase();
     const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (!user) {
+      await bcrypt.compare(password, await dummyHash);
       res.status(401).json({ error: 'Invalid credentials' });
       return;
     }
@@ -113,7 +122,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
+    logRouteError('auth.login', error);
     res.status(500).json({ error: 'Login failed' });
   }
 };
@@ -149,7 +158,7 @@ export const refreshToken = async (req: AuthRequest, res: Response): Promise<voi
       }
     });
   } catch (error) {
-    console.error('Refresh token error:', error);
+    logRouteError('auth.refresh', error);
     res.status(500).json({ error: 'Failed to refresh token' });
   }
 };
