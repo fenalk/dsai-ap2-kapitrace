@@ -25,8 +25,9 @@ function LoginContent() {
   const emailRef = useRef<HTMLInputElement>(null);
   const register = mode === 'register';
 
-  // F3.3: first field focused on open. Tab changes move focus in changeMode (only when clicked).
-  useEffect(() => { emailRef.current?.focus(); }, []);
+  // F3.3: first field focused on open (required by the SPEC, also on touch screens, where it opens the
+  // virtual keyboard). preventScroll keeps the page from jumping. Tab changes move focus in changeMode.
+  useEffect(() => { emailRef.current?.focus({ preventScroll: true }); }, []);
 
   function changeMode(next: Mode, source: 'keyboard' | 'pointer') {
     if (next === mode) return;
@@ -97,7 +98,6 @@ function LoginContent() {
                 className="input-adornment"
                 aria-pressed={showPassword}
                 aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                aria-controls="password"
                 onClick={() => setShowPassword(value => !value)}
               >
                 <Icon name={showPassword ? 'eye-off' : 'eye'} />

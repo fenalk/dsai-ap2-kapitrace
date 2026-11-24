@@ -54,6 +54,8 @@ export default function Tabs<T extends string>({ items, value, onChange, label, 
             aria-controls={controls}
             tabIndex={selected ? 0 : -1}
             disabled={item.disabled}
+            // A button activated by Enter/Space fires a click with detail 0 (no pointer click count);
+            // a mouse/touch click has detail >= 1. Arrow keys call onChange('keyboard') elsewhere.
             onClick={event => onChange(item.value, event.detail === 0 ? 'keyboard' : 'pointer')}
           >
             {item.label}
