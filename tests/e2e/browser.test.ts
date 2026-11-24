@@ -62,6 +62,9 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401, r
     socket = new WebSocket(endpoint);
     await new Promise<void>((resolve, reject) => { socket!.addEventListener('open', () => resolve(), { once: true }); socket!.addEventListener('error', () => reject(new Error('CDP connection failed')), { once: true }); });
     const lookupRequests: { hasBearer: boolean; path: string }[] = [];
+    // SPEC-FDE 002: login requests are counted to prove invalid fields never reach the server.
+    let loginRequests = 0;
+    let onPaused: ((params: Record<string, any>) => void) | undefined;
     let id = 0;
     let sessionId: string | undefined;
     const pending = new Map<number, { resolve: (value: Record<string, any>) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> }>();
@@ -71,6 +74,8 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401, r
         const header = Object.entries(message.params.request.headers).find(([name]) => name.toLowerCase() === 'authorization')?.[1];
         lookupRequests.push({ hasBearer: typeof header === 'string' && header.startsWith('Bearer '), path: new URL(message.params.request.url).pathname });
       }
+      if (message.method === 'Network.requestWillBeSent' && message.params.request.method === 'POST' && message.params.request.url === `${backend.url}/api/auth/login`) loginRequests++;
+      if (message.method === 'Fetch.requestPaused') onPaused?.(message.params);
       const operation = pending.get(message.id);
       if (operation) { pending.delete(message.id); clearTimeout(operation.timer); if (message.error) operation.reject(new Error(message.error.message)); else operation.resolve(message.result); }
     });
@@ -138,14 +143,54 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401, r
     await button('Sair'); await waitForLogin();
     assert.equal(await evaluate(`location.search`), '?saiu=1');
     await until(async () => await evaluate(`document.querySelector('[role="status"]')?.textContent.includes('Você saiu da sua conta.')`));
+    // SPEC-FDE 002 CA3: empty fields are reported next to them, in Portuguese, and nothing is sent.
+    const requestsBefore = loginRequests;
+    await submitLogin();
+    await until(async () => await text('#email-error') === 'Informe seu email.' && await text('#password-error') === 'Informe sua senha.');
+    assert.equal(await evaluate(`document.querySelector('#email').getAttribute('aria-invalid') === 'true' && document.querySelector('#password').getAttribute('aria-invalid') === 'true'`), true);
+    assert.equal(await evaluate(`document.querySelector('#email').getAttribute('aria-describedby')`), 'email-error');
+    assert.equal(await evaluate(`document.activeElement?.id`), 'email');
+    // CA9: editing a field clears its own error only.
+    await fill('#email', 'nome@');
+    await until(async () => await evaluate(`document.querySelector('#email-error') === null && document.querySelector('#password-error') !== null`));
+    // CA4: invalid format, still no request.
+    await submitLogin();
+    await until(async () => (await text('#email-error')).startsWith('Informe um email válido'));
+    await delay(300);
+    assert.equal(loginRequests, requestsBefore);
+    assert.equal(await evaluate(`document.querySelector('[role="alert"]')`), null);
+    // CA1: wrong password keeps the email, clears and focuses the password.
+    const invalidCredentials = 'Email ou senha incorretos. Confira os dados e tente novamente.';
     await fill('#email', email); await fill('#password', 'WrongTestOnlyPassword!'); await submitLogin();
-    await until(async () => await evaluate(`document.querySelector('[role="alert"]')?.textContent.includes('Invalid credentials')`));
+    await until(async () => await text('[role="alert"]') === invalidCredentials);
     assert.equal(await evaluate(`location.pathname`), '/login');
+    assert.equal(await evaluate(`document.querySelector('#email').value`), email);
+    assert.equal(await evaluate(`document.querySelector('#password').value === '' && document.activeElement?.id === 'password'`), true);
+    // CA2: an unknown email gets exactly the same text and behavior.
+    const unknown = `missing-${email}`;
+    await fill('#email', unknown); await fill('#password', 'WrongTestOnlyPassword!'); await submitLogin();
+    await until(async () => await evaluate(`document.querySelector('#password').value === ''`));
+    assert.equal(await text('[role="alert"]'), invalidCredentials);
+    assert.equal(await evaluate(`document.querySelector('#email').value === ${JSON.stringify(unknown)} && document.activeElement?.id === 'password'`), true);
     assert.equal(calls.length, 0);
+    // CA6: a 500 shows the generic text, never the server's English message.
+    onPaused = params => {
+      // The CORS preflight uses the same URL: let it through untouched.
+      if (params.request.method !== 'POST') { void send('Fetch.continueRequest', { requestId: params.requestId }); return; }
+      const cors = (params.responseHeaders as { name: string; value: string }[]).filter(header => header.name.toLowerCase().startsWith('access-control-'));
+      void send('Fetch.fulfillRequest', { requestId: params.requestId, responseCode: 500, responseHeaders: [...cors, { name: 'Content-Type', value: 'application/json' }], body: Buffer.from('{"error":"Login failed"}').toString('base64') });
+    };
+    await send('Fetch.enable', { patterns: [{ urlPattern: `${backend.url}/api/auth/login`, requestStage: 'Response' }] });
+    await fill('#email', email); await fill('#password', 'BrowserTestOnly-2026!'); await submitLogin();
+    await until(async () => (await text('[role="alert"]')).startsWith('Não foi possível entrar agora.'));
+    assert.equal((await text('[role="alert"]')).includes('Login failed'), false);
+    assert.equal(await evaluate(`location.pathname`), '/login');
+    await send('Fetch.disable'); onPaused = undefined;
+    // CA5: no connection.
     await fill('#password', 'BrowserTestOnly-2026!');
     await send('Network.setBlockedURLs', { urls: [`${backend.url}/api/auth/login`] });
     await submitLogin();
-    await until(async () => await evaluate(`document.querySelector('[role="alert"]')?.textContent.includes('Não foi possível conectar')`));
+    await until(async () => await text('[role="alert"]') === 'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.');
     assert.equal(await evaluate(`location.pathname`), '/login');
     await send('Network.setBlockedURLs', { urls: [] });
     await submitLogin(); await waitForLookup();
