@@ -51,7 +51,7 @@ Entregue em seis PRs, um por sub-issue. Cada requisito tem um ID para ser citado
 ### F1 — Fundação visual e shell responsivo (#37)
 
 - **F1.1** Tokens em `globals.css`: escala de espaçamento, raios, tipografia fluida (`clamp`), cores das quatro faixas de risco e dos quatro estados de fonte (`ok`, `not_configured`, `not_applicable`, `failed`). Texto e fundo com contraste WCAG AA (4,5:1 para texto normal).
-- **F1.2** Fontes Inter e JetBrains Mono carregadas por `next/font/google` (parte do Next; sem dependência nova).
+- **F1.2** Tipografia com pilhas de fontes do sistema (`system-ui`, `Segoe UI`, `Roboto`… e `ui-monospace`, `Cascadia Code`, `Menlo`…). Sem `next/font/google` nem fontes externas: o build e o E2E não podem depender de rede (o commit `da1a7d7` já tinha removido fontes baixadas).
 - **F1.3** Componentes base em `src/components/ui/`: botão, campo, card, badge, alerta, skeleton, toast, estado vazio e abas. Abas com `role="tablist"`/`role="tab"`/`aria-selected`.
 - **F1.4** Ícones em SVG inline, com `aria-hidden="true"`, no lugar dos emojis.
 - **F1.5** Um único shell autenticado (route group) para `/lookup` e `/dashboard`, substituindo os dois `layout.tsx`. As URLs não mudam.
