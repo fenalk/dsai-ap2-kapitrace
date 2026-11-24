@@ -1,10 +1,12 @@
 // SPEC-FDE 002: login error texts and client-side field rules. Pure functions, no React and no I/O.
+// Scope: the "Entrar" mode only. Sign-up still shows its own messages until SPEC-FDE 003.
 import { ApiError, NetworkError } from './api';
 
 export interface LoginFields { email: string; password: string }
 export type LoginFieldErrors = Partial<Record<keyof LoginFields, string>>;
 
-// Same limits the backend applies on login (auth.controller.ts).
+// Must match the login checks in src/backend/src/modules/auth/auth.controller.ts (email > 254, password > 1024,
+// same email pattern). tests/integration/login-contract.test.ts fails if client and server diverge.
 const EMAIL_MAX = 254;
 const PASSWORD_MAX = 1024;
 const EMAIL_FORMAT = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -16,6 +18,7 @@ export const loginMessages = {
   passwordTooLong: `A senha pode ter no máximo ${PASSWORD_MAX} caracteres.`,
   badRequest: 'Verifique o email e a senha informados e tente novamente.',
   invalidCredentials: 'Email ou senha incorretos. Confira os dados e tente novamente.',
+  // Deliberately longer than NetworkError's default text, which the other screens keep (tests/unit/login-messages.test.ts).
   network: 'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.',
   unexpected: 'Não foi possível entrar agora. Tente novamente em alguns instantes. Se o problema continuar, contate o administrador.'
 } as const;

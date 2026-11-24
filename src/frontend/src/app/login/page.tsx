@@ -59,7 +59,8 @@ function LoginContent() {
     setSessionToken(null);
     try {
       if (register) {
-        // Sign-up messages are SPEC-FDE 003; they keep the current behavior.
+        // Sign-up failures still show the server text (SPEC-FDE 003). The "never show server text" rule of
+        // SPEC-FDE 002 covers the "Entrar" mode and the login request made after a successful sign-up.
         try { await api('/api/auth/register', { method: 'POST', body: JSON.stringify({ ...credentials, name: String(form.get('name') || '') }) }); }
         catch (failure) { setError(failure instanceof Error ? failure.message : 'Falha na autenticação'); return; }
       }

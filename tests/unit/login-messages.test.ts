@@ -22,6 +22,13 @@ describe('SPEC-FDE 002 login messages', () => {
     }
   });
 
+  it('keeps the generic network text for other screens and a longer one on login, on purpose', () => {
+    const generic = 'Não foi possível conectar ao servidor. Tente novamente.';
+    assert.equal(new NetworkError().message, generic);
+    assert.equal(loginFailureMessage(new NetworkError()), 'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.');
+    assert.notEqual(loginMessages.network, generic);
+  });
+
   it('tells how long to wait after too many attempts', () => {
     assert.equal(loginFailureMessage(http(429, 'Too many login attempts', 1)), 'Muitas tentativas. Aguarde 1 segundo e tente novamente.');
     assert.equal(loginFailureMessage(http(429, 'Too many login attempts', 45)), 'Muitas tentativas. Aguarde 45 segundos e tente novamente.');

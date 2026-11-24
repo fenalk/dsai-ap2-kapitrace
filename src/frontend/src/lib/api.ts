@@ -8,7 +8,11 @@ export class AuthenticationError extends Error {
 export class ApiError extends Error {
   constructor(message: string, public status: number, public body: Record<string, unknown>, public retryAfter: number | null) { super(message); this.name = 'ApiError'; }
 }
-/** The request never reached the server (offline, DNS, blocked URL, CORS). Same message as before for other screens. */
+/**
+ * The request never reached the server (offline, DNS, blocked URL, CORS).
+ * The message is the one other screens already show and stays unchanged on purpose; the login screen
+ * replaces it with its own text (SPEC-FDE 002). Both are pinned in tests/unit/login-messages.test.ts.
+ */
 export class NetworkError extends Error {
   constructor() { super('Não foi possível conectar ao servidor. Tente novamente.'); this.name = 'NetworkError'; }
 }
