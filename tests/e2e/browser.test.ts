@@ -129,7 +129,8 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
     await button('Criar conta e entrar'); await waitForLookup();
     assert.equal(await evaluate(`sessionStorage.getItem('kapitrace.session') === null && localStorage.getItem('kapitrace.session') === null`), true);
     await clientNavigate('/dashboard');
-    await until(async () => await evaluate(`document.body.textContent.includes('Nenhum indicador monitorado.')`));
+    // F5.5: empty state with a way back to the lookup.
+    await until(async () => await evaluate(`document.body.textContent.includes('Nenhum indicador monitorado') && Boolean(document.querySelector('.empty-state a[href="/lookup"]'))`));
     // F2.4: "Sair" sits in the closed account disclosure; open it like a user would.
     assert.equal(await evaluate(`document.querySelector('.user-menu-panel').hidden`), true);
     await evaluate(`document.querySelector('.user-menu-toggle').click()`);
@@ -177,9 +178,33 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
     await until(async () => lookupRequests.length > beforeRepeat && await lookupSource() === 'cache' && (await watchStatus())?.text === 'Na watchlist');
     assert.equal(calls.length, 6);
     await clientNavigate('/dashboard');
-    await until(async () => await evaluate(`document.querySelector('[data-testid="watchlist-item"]')?.textContent.includes('8.8.8.8')`));
+    const watchItems = () => evaluate(`[...document.querySelectorAll('[data-testid="watchlist-item"]')].map(row => row.querySelector('code').textContent)`);
+    await until(async () => (await watchItems())?.includes('8.8.8.8'));
+    assert.ok(await evaluate(`Boolean(document.querySelector('[data-testid="watchlist-item"] time[datetime]'))`), 'F5.1: inclusion date');
+    // F5.2: local filter by type and text.
+    await evaluate(`document.querySelector('input[name="watchlist-filter"][value="domain"]').click()`);
+    await until(async () => (await watchItems()).length === 0 && await evaluate(`document.body.textContent.includes('Nenhum item encontrado')`));
+    await button('Limpar filtros');
+    await until(async () => (await watchItems()).length === 1);
+    await fill('[aria-label="Buscar no valor"]', 'nada-aqui');
+    await until(async () => (await watchItems()).length === 0);
+    await fill('[aria-label="Buscar no valor"]', '8.8');
+    await until(async () => (await watchItems()).length === 1);
+    assert.equal(await text('[data-testid="watchlist-summary"]'), '1 de 1 item');
+    await fill('[aria-label="Buscar no valor"]', '');
+    // F5.4: removal is immediate and can be undone from the toast for 6 s.
     await button('Remover');
-    await until(async () => await evaluate(`document.body.textContent.includes('Nenhum indicador monitorado.')`));
+    await until(async () => (await watchItems()).length === 0 && await evaluate(`[...document.querySelectorAll('.toast')].some(t => t.textContent.includes('Removido'))`));
+    await button('Desfazer');
+    await until(async () => (await watchItems()).includes('8.8.8.8'));
+    // F5.3: "Consultar" reopens the lookup, which runs by itself (F2.2) and keeps "Na watchlist" (F4.13).
+    await evaluate(`document.querySelector('[data-testid="watchlist-lookup"]').click()`);
+    await until(async () => await evaluate(`location.pathname === '/lookup' && location.search === '?type=ip&q=8.8.8.8'`) && await lookupSource() === 'cache' && (await watchStatus())?.text === 'Na watchlist');
+    assert.equal(calls.length, 6);
+    await clientNavigate('/dashboard');
+    await until(async () => (await watchItems())?.includes('8.8.8.8'));
+    await button('Remover');
+    await until(async () => await evaluate(`document.body.textContent.includes('Nenhum indicador monitorado')`));
     await clientNavigate('/lookup'); await waitForLookup(); await fill('[aria-label="Indicador"]', '999.1.2.3'); await button('Analisar');
     await until(async () => await evaluate(`document.querySelector('[role="alert"]')?.textContent.startsWith('IP inválido')`));
     assert.equal(await evaluate(`document.querySelector('[data-testid="lookup-result"]')`), null);

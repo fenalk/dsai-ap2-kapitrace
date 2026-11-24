@@ -42,4 +42,4 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   }
   return data as T;
 }
-export interface WatchlistItem { id: string; itemValue: string; itemType: string }
+export interface WatchlistItem { id: string; itemValue: string; itemType: string; createdAt?: string }
