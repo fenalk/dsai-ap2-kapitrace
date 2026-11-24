@@ -24,7 +24,7 @@ Mantido conforme a [SPEC-FDE 005](SPEC-FDE/2026-11-19-governanca-specs.md). Ao m
 | SPEC-2026-10-06-auth | [2026-10-06-auth-and-middleware-reactivation.md](2026-10-06-auth-and-middleware-reactivation.md) | implementada | upstream #4 | `45b94f0`, `c8caef2` | Substitui a 10-01 no acesso ao lookup (passa a exigir JWT) |
 | SPEC-2026-10-06-supabase | [2026-10-06-supabase-postgresql-migration.md](2026-10-06-supabase-postgresql-migration.md) | implementada | upstream #2 | `5617970`, `f7b6901`, `ab8e372` (upstream PR #8) | Substitui SQLite em todas as SPECs anteriores |
 | SPEC-FDE 001 | [SPEC-FDE/2026-11-18-consulta-indicadores-seguranca.md](SPEC-FDE/2026-11-18-consulta-indicadores-seguranca.md) | implementada | #2 | PR #13; D1 (opção B): issue #17 | D1 resolvida (opção B). Pendente: validação manual com chaves reais |
-| SPEC-FDE 002 | [SPEC-FDE/2026-11-18-melhoria-mensagem-erro-login.md](SPEC-FDE/2026-11-18-melhoria-mensagem-erro-login.md) | proposta | #3 | — | Depende de `ApiError` em `lib/api.ts`, já entregue pela 001 |
+| SPEC-FDE 002 | [SPEC-FDE/2026-11-18-melhoria-mensagem-erro-login.md](SPEC-FDE/2026-11-18-melhoria-mensagem-erro-login.md) | implementada | #3 | PR #57 | Pendente: CA8 manual (contraste e 360 px) |
 | SPEC-FDE 003 | [SPEC-FDE/2026-11-18-melhoria-preenchimento-cadastro.md](SPEC-FDE/2026-11-18-melhoria-preenchimento-cadastro.md) | proposta | #4 | — | Depende da 002. Decisões D1–D4 pendentes |
 | SPEC-FDE 004 | [SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md](SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md) | implementada | #8 | PRs #9 (SPEC), #10 e #11 | Conferência registrada do Definition of Done (E4, cenários "PR real") pendente |
 | SPEC-FDE 005 | [SPEC-FDE/2026-11-19-governanca-specs.md](SPEC-FDE/2026-11-19-governanca-specs.md) | implementada | — | PRs #15 e #16 (E5) | Só governança; nenhum requisito muda |
@@ -59,7 +59,7 @@ Legenda: ✅ concluída · 🔶 em andamento ou com pendência · ⏳ SPEC exist
 
 | Ordem | Item | Estado | Depende de | Observação |
 | --- | --- | --- | --- | --- |
-| 2.1 | #3 **SPEC-FDE 002**: mensagens de erro no login | ⏳ (`proposta`) | aprovação | `ApiError` de `lib/api.ts` já existe (001). Cria as classes de erro reutilizadas pela 003. |
+| 2.1 | #3 **SPEC-FDE 002**: mensagens de erro no login | 🔶 | — | `ApiError` de `lib/api.ts` já existe (001). Cria as classes de erro reutilizadas pela 003. |
 | 2.2 | #4 **SPEC-FDE 003**: preenchimento do cadastro | ⏳ (`proposta`) | 2.1; decisões D1–D4 | Mesmo componente da 002 (`login/page.tsx`): implementar depois dela para evitar conflito. Resolver junto a divergência da regra de senha (D4). |
 | 2.3 | #21 **Sessão persistente** (usar `/api/auth/refresh`) | ✏️ ❓ | confirmação do cliente | Hoje recarregar a página faz logout. A sessão só em memória foi uma regra de segurança do cliente: confirmar com ele antes de especificar. |
 | 2.4 | #35 **SPEC-FDE 006**: experiência do frontend (fundação visual, navegação, login visual, consulta, watchlist, acessibilidade) | 🔶 | — | Seis PRs, uma por sub-issue (#37–#42): PRs #44 a #49. Falta a validação manual da seção 8 para `validada`. Login: só a parte visual, sem conflitar com 2.1/2.2. Não inclui a sessão persistente (2.3). |

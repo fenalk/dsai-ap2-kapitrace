@@ -8,6 +8,14 @@ export class AuthenticationError extends Error {
 export class ApiError extends Error {
   constructor(message: string, public status: number, public body: Record<string, unknown>, public retryAfter: number | null) { super(message); this.name = 'ApiError'; }
 }
+/**
+ * The request never reached the server (offline, DNS, blocked URL, CORS).
+ * The message is the one other screens already show and stays unchanged on purpose; the login screen
+ * replaces it with its own text (SPEC-FDE 002). Both are pinned in tests/unit/login-messages.test.ts.
+ */
+export class NetworkError extends Error {
+  constructor() { super('Não foi possível conectar ao servidor. Tente novamente.'); this.name = 'NetworkError'; }
+}
 function parseRetryAfter(value: string | null): number | null {
   if (!value) return null;
   const seconds = /^\d+$/.test(value.trim()) ? Number(value) : (Date.parse(value) - Date.now()) / 1000;
@@ -26,7 +34,7 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   }
   let response: Response;
   try { response = await fetch(`${API_BASE}${path}`, { ...options, headers, cache: 'no-store' }); }
-  catch { throw new Error('Não foi possível conectar ao servidor. Tente novamente.'); }
+  catch { throw new NetworkError(); }
   if (authenticated && response.status === 401) {
     // Clears only the token that failed: a newer login made meanwhile survives.
     expireSession(requestToken);
