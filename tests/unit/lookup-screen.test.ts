@@ -4,7 +4,7 @@ import { randomBytes } from 'node:crypto';
 import { detectIndicatorType, normalizeIndicator, refang, sentValueNotice } from '../../src/frontend/src/lib/indicator';
 import { coveragePercent, expiryText, groupSources, originLabel, relativeTime, retryDelay, riskBand } from '../../src/frontend/src/lib/lookup-result';
 import { addRecentLookup, getRecentLookups, rememberLookup, MAX_RECENT_LOOKUPS } from '../../src/frontend/src/lib/recent-lookups';
-import { setSessionToken, signOut } from '../../src/frontend/src/lib/session';
+import { expireSession, setSessionToken, signOut } from '../../src/frontend/src/lib/session';
 import { signTestJwt, testClaims } from '../jwt-fixtures';
 
 const sha256 = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
@@ -12,7 +12,10 @@ const sha256 = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 // SPEC-FDE 006 F4.1: type detection while typing.
 describe('detectIndicatorType (F4.1)', () => {
   it('detects IPv4, IPv6 and URLs whose host is an IP as IP', () => {
-    for (const value of ['8.8.8.8', ' 1.1.1.1 ', '2001:4860:4860::8888', '8.8.8[.]8', 'http://8.8.8.8:8080/x', 'https://[2001:db8::1]/']) assert.equal(detectIndicatorType(value), 'ip', value);
+    for (const value of ['8.8.8.8', ' 1.1.1.1 ', '2001:4860:4860::8888', '::ffff:8.8.8.8', '[2001:db8::1]', '2001[:]db8[:][:]1', '8.8.8[.]8', 'http://8.8.8.8:8080/x', 'https://[2001:db8::1]/']) assert.equal(detectIndicatorType(value), 'ip', value);
+  });
+  it('does not take any text with ":" for an IP (host:port, single colon, non-hex)', () => {
+    for (const value of ['exemplo.com:8080', 'foo:bar', '8.8.8.8:53', 'mailto:x', 'g::1']) assert.equal(detectIndicatorType(value), 'domain', value);
   });
   it('detects MD5, SHA-1 and SHA-256 as hash', () => {
     for (const value of ['d41d8cd98f00b204e9800998ecf8427e', 'da39a3ee5e6b4b0d3255bfef95601890afd80709', sha256, sha256.toUpperCase()]) assert.equal(detectIndicatorType(value), 'hash', value);
@@ -38,6 +41,7 @@ describe('normalizeIndicator (F4.2)', () => {
     assert.equal(normalizeIndicator('https://user:pass@Sub.Example.org:8443/a?b#c', 'domain'), 'sub.example.org');
     assert.equal(normalizeIndicator('http://8.8.8.8:8080/x', 'ip'), '8.8.8.8');
     assert.equal(normalizeIndicator('https://[2001:db8::1]:443/', 'ip'), '2001:db8::1');
+    assert.equal(normalizeIndicator(' [2001:db8::1] ', 'ip'), '2001:db8::1');
   });
   it('lower-cases domains and drops the trailing dot, trims every type', () => {
     assert.equal(normalizeIndicator('  Example.COM.  ', 'domain'), 'example.com');
@@ -154,10 +158,8 @@ describe('recent lookups (F4.14)', () => {
     assert.equal(list.length, MAX_RECENT_LOOKUPS);
     assert.equal(list[0].indicator, '1.1.1.19');
   });
-  it('remembers only with a session and forgets on sign out or another login', () => {
+  it('is cleared by the session itself on sign out, expiry or another login', () => {
     const secret = randomBytes(48).toString('hex');
-    rememberLookup({ type: 'ip', indicator: '8.8.8.8' });
-    assert.deepEqual(getRecentLookups(), []);
     setSessionToken(signTestJwt(testClaims(), secret));
     rememberLookup({ type: 'ip', indicator: '8.8.8.8' });
     assert.equal(getRecentLookups().length, 1);
@@ -166,6 +168,13 @@ describe('recent lookups (F4.14)', () => {
     setSessionToken(signTestJwt(testClaims(), secret));
     rememberLookup({ type: 'hash', indicator: sha256 });
     setSessionToken(signTestJwt({ ...testClaims(), email: 'other@example.com' }, secret));
+    assert.deepEqual(getRecentLookups(), []);
+    const current = signTestJwt({ ...testClaims(), email: 'third@example.com' }, secret);
+    setSessionToken(current);
+    rememberLookup({ type: 'ip', indicator: '1.1.1.1' });
+    setSessionToken(current);
+    assert.equal(getRecentLookups().length, 1, 'setting the same token again keeps the list');
+    expireSession(current);
     assert.deepEqual(getRecentLookups(), []);
   });
 });

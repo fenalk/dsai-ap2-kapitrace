@@ -5,6 +5,8 @@ import type { LookupType } from './lookup-messages';
 const SCHEME = /^[a-z][a-z0-9+.-]*:\/\//i;
 const IPV4 = /^\d{1,3}(?:\.\d{1,3}){3}$/;
 const HASH = /^(?:[a-f0-9]{32}|[a-f0-9]{40}|[a-f0-9]{64})$/i;
+// IPv6 shape only (hex groups, ":" and an optional IPv4 tail, at least two colons), so "host:port" or "foo:bar" stay domains.
+const IPV6_SHAPE = /^(?=(?:[^:]*:){2})[0-9a-f:.]+$/i;
 
 /** Undoes common "defanging": [.] (.) {.} [dot] → ".", [:] → ":", hxxp(s) → http(s). */
 export function refang(raw: string): string {
@@ -14,28 +16,26 @@ export function refang(raw: string): string {
     .replace(/\bhxxp(s?)(?=:\/\/)/gi, (_, secure: string) => `http${secure.toLowerCase()}`);
 }
 
-/** Host of a URL with scheme, without port, credentials or IPv6 brackets; null when it is not such a URL. */
+/** Host of a URL with scheme, without port or credentials; null when it is not such a URL. */
 function urlHost(value: string): string | null {
   if (!SCHEME.test(value)) return null;
-  try {
-    const host = new URL(value).hostname;
-    return host.startsWith('[') && host.endsWith(']') ? host.slice(1, -1) : host;
-  } catch { return null; }
+  try { return new URL(value).hostname; } catch { return null; }
 }
 
-/** Trimmed, refanged and reduced to the host when it is a URL: the common part of detection and normalization. */
+/** Trimmed, refanged and reduced to the host when it is a URL and without IPv6 brackets: shared by detection and normalization. */
 function prepare(raw: string): string {
   const value = refang(raw.trim());
-  return urlHost(value) ?? value;
+  const host = urlHost(value) ?? value;
+  return host.startsWith('[') && host.endsWith(']') ? host.slice(1, -1) : host;
 }
 
 /**
- * Type suggested while the user types (F4.1): IPv4 or text with ":" (no URL scheme) → IP;
- * 32/40/64 hex characters → hash; anything else → domain. A URL is judged by its host.
+ * Type suggested while the user types (F4.1): IPv4 or IPv6 shape → IP; 32/40/64 hex characters → hash;
+ * anything else (including "host:port") → domain. A URL is judged by its host. The backend still validates.
  */
 export function detectIndicatorType(raw: string): LookupType {
   const value = prepare(raw);
-  if (IPV4.test(value) || value.includes(':')) return 'ip';
+  if (IPV4.test(value) || IPV6_SHAPE.test(value)) return 'ip';
   if (HASH.test(value)) return 'hash';
   return 'domain';
 }

@@ -1,5 +1,6 @@
 'use client';
 import type { SessionEndReason } from './navigation';
+import { clearRecentLookups } from './recent-lookups';
 // Private module state: never persisted, serialized into HTML or logged.
 let token: string | null = null;
 let endReason: SessionEndReason = null;
@@ -19,6 +20,8 @@ export function setSessionToken(value: string | null): void {
   if (value !== null && (typeof value !== 'string' || value.length > 8192 || !/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(value))) {
     throw new Error('Resposta de autenticação inválida.');
   }
+  // Session-scoped data (F4.14) never outlives the token it was gathered with.
+  if (value !== token) clearRecentLookups();
   token = value;
   endReason = null;
   // Clear only the previous implementation's known key, without reading it.
@@ -29,6 +32,7 @@ export function setSessionToken(value: string | null): void {
 }
 function endSession(reason: Exclude<SessionEndReason, null>): void {
   if (token === null) return;
+  clearRecentLookups();
   token = null;
   endReason = reason;
   notify();

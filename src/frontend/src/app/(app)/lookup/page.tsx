@@ -7,6 +7,7 @@ import { formatWait, partialNotice, requestLimitMessage, unavailableMessage, val
 import { detectIndicatorType, normalizeIndicator, sentValueNotice } from '@/lib/indicator';
 import { coveragePercent, expiryText, originLabel, relativeTime, retryDelay, riskBand } from '@/lib/lookup-result';
 import { getRecentLookups, rememberLookup, serverRecentLookups, subscribeRecentLookups } from '@/lib/recent-lookups';
+import { hasSession } from '@/lib/session';
 import RequireSession from '@/components/RequireSession';
 import Alert from '@/components/ui/Alert';
 import Badge from '@/components/ui/Badge';
@@ -31,6 +32,7 @@ const types: { value: LookupType; label: string; icon: IconName }[] = [
   { value: 'hash', label: 'Hash', icon: 'hash' },
 ];
 const typeName: Record<LookupType, string> = { ip: 'IP', domain: 'Domínio', hash: 'Hash' };
+const WATCHLIST_CHECK_TIMEOUT_MS = 3000;
 // Wall clock read only in event handlers and timers, never while rendering.
 const clock = (): number => Date.now();
 const parseType = (value: string | null): LookupType | null => value === 'ip' || value === 'domain' || value === 'hash' ? value : null;
@@ -86,17 +88,20 @@ function LookupContent() {
     return () => window.clearInterval(timer);
   }, [coolingDown, result]);
 
+  // F4.13: "Adicionar" waits for this check so it does not create a duplicate, but never for long:
+  // after WATCHLIST_CHECK_TIMEOUT_MS (or any failure) the button is released and the backend accepts the item anyway.
   async function checkWatchlist(found: LookupResult, current: number) {
     setWatch('checking');
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), WATCHLIST_CHECK_TIMEOUT_MS);
     try {
-      const items = await api<WatchlistItem[]>('/api/watchlist');
+      const items = await api<WatchlistItem[]>('/api/watchlist', { signal: controller.signal });
       if (current !== generation.current) return;
       const listed = Array.isArray(items) && items.some(item => item.itemType === found.type && item.itemValue === found.indicator);
       setWatch(listed ? 'present' : 'absent');
     } catch {
-      // Without the list the user can still add: the backend accepts the item either way.
       if (current === generation.current) setWatch('absent');
-    }
+    } finally { window.clearTimeout(timer); }
   }
 
   async function runSearch(raw: string, searchType: LookupType) {
@@ -109,7 +114,8 @@ function LookupContent() {
       if (current !== generation.current) return;
       setNow(clock());
       setResult(data);
-      rememberLookup({ type: data.type, indicator: data.indicator });
+      // An answer that arrives after sign out must not seed the next session's list (F4.14).
+      if (hasSession()) rememberLookup({ type: data.type, indicator: data.indicator });
       void checkWatchlist(data, current);
     } catch (failure) {
       if (current !== generation.current) return;
