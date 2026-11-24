@@ -2,9 +2,9 @@
 import Link from 'next/link';
 import { Suspense, useRef, useState, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { api, ApiError } from '../../lib/api';
-import { describeDetails, partialNotice, providerName, requestLimitMessage, sourceTone, statusText, unavailableMessage, validationMessage, type LookupType, type SourceInfo } from '../../lib/lookup-messages';
-import RequireSession from '../../components/RequireSession';
+import { api, ApiError } from '@/lib/api';
+import { describeDetails, partialNotice, providerName, requestLimitMessage, sourceTone, statusText, unavailableMessage, validationMessage, type LookupType, type SourceInfo } from '@/lib/lookup-messages';
+import RequireSession from '@/components/RequireSession';
 
 interface LookupResult {
   indicator: string; type: LookupType; threatScore: number | null; riskLevel: string | null;
