@@ -84,6 +84,10 @@ describe('Lookup resilience at external HTTP boundary', () => {
     assert.equal(status(body.sources, 'ABUSEIPDB'), 'ok'); assert.equal(status(body.sources, 'VIRUSTOTAL'), 'ok');
     assert.equal(body.sources.find((source: { name: string }) => source.name === 'ABUSEIPDB').details.abuseConfidenceScore, 80);
     assert.ok(Number.isFinite(body.threatScore) && body.threatScore >= 0 && body.threatScore <= 100);
+    // D1 option B: unconfigured sources stay listed and lower confidence, but the result is not partial and gets the 24h TTL.
+    assert.equal(body.partial, false); assert.equal(status(body.sources, 'SHODAN'), 'not_configured');
+    assert.ok(body.analysis.confidencePercentage < 100);
+    assert.equal(Date.parse(body.expiresAt) - Date.parse(body.cachedAt), 86400000);
     assert.deepEqual([...new Set(calls.map(url => url.hostname))].sort(), ['api.abuseipdb.com', 'www.virustotal.com']);
     responses.set(host, () => json({}, 429, { 'Retry-After': '90' }));
     const limited = await lookup(`/api/lookup/domain/${domain()}`, { headers: { Origin: 'http://localhost:3000' } });

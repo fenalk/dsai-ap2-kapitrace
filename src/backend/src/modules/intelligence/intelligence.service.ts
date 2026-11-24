@@ -97,6 +97,8 @@ export async function collectIntelligence(type: IndicatorType, indicator: string
     }));
     const analysis = calculate_threat_score(factors, type);
     const applicable = sources.filter(source => source.status !== 'not_applicable');
-    return { factors, analysis, sources, partial: applicable.some(source => source.status !== 'ok'), successful: applicable.some(source => source.status === 'ok' || source.status === 'not_found') };
+    // Unconfigured sources stay listed and lower confidence, but do not make the result partial (SPEC-FDE 001, D1 option B).
+    const consulted = applicable.filter(source => source.status !== 'not_configured');
+    return { factors, analysis, sources, partial: consulted.some(source => source.status !== 'ok'), successful: applicable.some(source => source.status === 'ok' || source.status === 'not_found') };
   } finally { clearTimeout(timer); }
 }
