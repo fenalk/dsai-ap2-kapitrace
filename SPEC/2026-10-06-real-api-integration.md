@@ -4,7 +4,7 @@ Data: 2026-10-06
 Status: implementada (`8f7c94c`, `da1a7d7`, `798e1d1`). Texto original: "especificação aprovada para implementação pela solicitação do usuário; implementação pendente." Status atualizado em 2026-11-19 pela [SPEC-FDE 005](SPEC-FDE/005-governanca-specs.md).
 Agente: Codex (GPT-6)
 
-> **Precedência:** esta SPEC complementa e substitui partes da [2026-10-01-threat-analyzer.md](2026-10-01-threat-analyzer.md) (§3 ThreatScore e §4.2 resposta do lookup). As menções a SQLite (§1 e §2) foram substituídas pela [2026-10-06-supabase-postgresql-migration.md](2026-10-06-supabase-postgresql-migration.md): o banco é PostgreSQL. O acesso anônimo ao lookup previsto em §8 ("consultas públicas") foi substituído pela [2026-10-06-auth-and-middleware-reactivation.md](2026-10-06-auth-and-middleware-reactivation.md). A regra de `partial` (§7) segue vigente, mas está em discussão na decisão D1 da [SPEC-FDE 001](SPEC-FDE/001-consulta-indicadores-seguranca.md).
+> **Precedência:** esta SPEC complementa e substitui partes da [2026-10-01-threat-analyzer.md](2026-10-01-threat-analyzer.md) (§3 ThreatScore e §4.2 resposta do lookup). As menções a SQLite (§1 e §2) foram substituídas pela [2026-10-06-supabase-postgresql-migration.md](2026-10-06-supabase-postgresql-migration.md): o banco é PostgreSQL. O acesso anônimo ao lookup previsto em §8 ("consultas públicas") foi substituído pela [2026-10-06-auth-and-middleware-reactivation.md](2026-10-06-auth-and-middleware-reactivation.md). A regra de `partial` (§7) foi alterada pela decisão D1 da [SPEC-FDE 001](SPEC-FDE/001-consulta-indicadores-seguranca.md) (opção B, 2026-11-24): fonte `not_configured` não torna o resultado parcial.
 
 ## 1. Escopo e precedência
 
@@ -77,7 +77,7 @@ Retry no máximo uma vez para falha transitória de rede ou 502/503/504, com bac
 Preservar top-level `source`, `indicator`, `type`, `threatScore`, `riskLevel`, `data`, `analysis`; incluir `cachedAt`, `expiresAt`, `stale`, `partial`, `assessmentStatus`, `scoreVersion` e estados por fonte. HIT/MISS devem retornar a mesma estrutura de análise. Não expor payloads brutos ou metadados sensíveis do fornecedor.
 
 - HIT: versão real-api-v1 e expiresAt no futuro; `source: cache`, nenhuma chamada externa.
-- MISS/expirado: consulta real; sucesso completo cacheado por 24h, parcial com métrica válida por 5min. Armazenar expiresAt dentro do JSON existente para TTL diferenciado sem exigir mudança de schema.
+- MISS/expirado: consulta real; sucesso completo cacheado por 24h, parcial com métrica válida por 5min. Resultado é parcial quando alguma fonte aplicável **e configurada** não está `ok`; fontes `not_configured` continuam listadas e reduzem a confiança, mas não tornam o resultado parcial (D1 da SPEC-FDE 001, opção B). Armazenar expiresAt dentro do JSON existente para TTL diferenciado sem exigir mudança de schema.
 - Coalescer consultas simultâneas por tipo/IOC (single-flight); liberar registro em finally, inclusive quando há erro. Limitação por processo deve ser documentada; implantação com múltiplas instâncias requer coordenação compartilhada.
 - Cache legado sem versão nunca pode ser usado, nem como stale. JSON corrompido é MISS.
 - Falha total: servir apenas último resultado real com score, idade <= 48h desde coleta, como `source: cache`, `stale: true`, `partial: true`; preservar timestamps, incluir motivo sanitizado, não renovar validade nem sobrescrever esse registro.

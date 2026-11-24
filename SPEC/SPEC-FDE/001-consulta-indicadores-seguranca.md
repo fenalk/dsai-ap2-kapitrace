@@ -2,7 +2,7 @@
 
 - **Prioridade:** P0 — Alta
 - **Data:** 2026-11-18
-- **Status:** implementada (PR #13; issue #2 fechada). Pendentes: decisão D1 e validação manual com chaves reais ("Como validar", parte manual). Atualizado em 2026-11-19 pela SPEC-FDE 005.
+- **Status:** implementada (PR #13; issue #2 fechada). Decisão D1 resolvida em 2026-11-24 (opção B, issue #17). Pendente: validação manual com chaves reais ("Como validar", parte manual). Atualizado em 2026-11-19 pela SPEC-FDE 005.
 - **Agente:** Claude Code (Claude Opus 5.5)
 - **Origem:** diagnóstico FDE (issue #1) e entrevista com o cliente
 - **SPECs relacionadas:** `SPEC/2026-10-06-real-api-integration.md`, `SPEC/2026-10-01-threat-analyzer.md`, `SPEC/2026-10-06-auth-and-middleware-reactivation.md`
@@ -76,12 +76,13 @@ Evidência normalizada hoje (`intelligence.service.ts`, `normalizeProvider`):
 
 **E6 — Testes:** integração para 503 com `sources` e `Retry-After` só com dois provedores configurados; e2e para a mensagem de 503 e para os rótulos. Usar as fixtures existentes de `api.abuseipdb.com` e `www.virustotal.com` em `tests/http-fixtures.ts`.
 
-### Decisão pendente (não implementar sem aprovação)
+### Decisão D1 (resolvida em 2026-11-24: opção B, issue #17)
 
 **D1 — `not_configured` deve tornar o resultado "parcial"?** (problema 3)
-- **Opção A (atual):** manter. Mais conservador, mas força TTL de 5 min e o aviso permanente, com mais consumo de cota.
-- **Opção B (recomendada):** fontes `not_configured` não contam para `partial`, mas continuam listadas e reduzindo `confidencePercentage`. Mantém o princípio de não fabricar reputação e permite o cache de 24 h.
-- A opção B altera uma regra da SPEC `2026-10-06-real-api-integration.md` e os testes de `lookup-resilience`. Por isso exige aprovação e atualização da SPEC antes do código.
+- **Opção A (anterior):** manter. Mais conservador, mas força TTL de 5 min e o aviso permanente, com mais consumo de cota.
+- **Opção B (aprovada):** fontes `not_configured` não contam para `partial`, mas continuam listadas e reduzindo `confidencePercentage`. Mantém o princípio de não fabricar reputação e permite o cache de 24 h.
+
+Regra vigente: `partial` é verdadeiro quando alguma fonte **aplicável e configurada** não está `ok` (`rate_limited`, `timeout`, `unavailable`, `invalid_response`, `not_found`). `not_applicable` e `not_configured` ficam fora dessa conta. As fontes `not_configured` continuam na lista `sources` da resposta, e `successful` (que decide o 503) não muda. A regra correspondente da SPEC `2026-10-06-real-api-integration.md` §7 foi atualizada junto.
 
 ## 4. Fora do escopo
 
@@ -107,6 +108,7 @@ Evidência normalizada hoje (`intelligence.service.ts`, `normalizeProvider`):
 - **CA10 — Validação:** Dado um IP privado (ex.: `10.0.0.1`) ou um hash de tamanho inválido, quando consulto, então a tela mostra a mensagem em português de E4 e nenhum provedor é chamado.
 - **CA11 — Log de configuração:** Dado o backend iniciando com as duas chaves, quando observo o log de inicialização, então aparecem apenas os nomes `ABUSEIPDB, VIRUSTOTAL`.
 - **CA12 — Regressão:** `npm run test:unit`, `npm run test:integration`, `npm run test:e2e`, `npm --prefix src/backend run build`, `npm --prefix src/frontend run lint` e `npm --prefix src/frontend run build` passam.
+- **CA13 — Fonte não configurada (D1):** Dado que só o AbuseIPDB e o VirusTotal estão configurados e ambos respondem, quando consulto um IP público, então `partial` é `false`, o resultado fica em cache por 24 h, as demais fontes aparecem como "Não configurada" e `confidencePercentage` fica abaixo de 100.
 
 ## 6. Dependências
 
@@ -115,7 +117,7 @@ Evidência normalizada hoje (`intelligence.service.ts`, `normalizeProvider`):
 - PostgreSQL configurado (`DATABASE_URL`, `DIRECT_URL`, migrations aplicadas) e `JWT_SECRET` com ≥32 caracteres.
 - Componentes: `intelligence.service.ts`, `http.ts` (cooldown, allowlist de hosts), `lookup.controller.ts`, `lib/api.ts`, `app/lookup/page.tsx`, `server.ts`, `tests/http-fixtures.ts`, `tests/e2e/browser.test.ts`.
 - **Ponto compartilhado com a SPEC-FDE 002:** a mudança em `lib/api.ts` (expor `status`/`Retry-After`) também é usada pela 002. Implemente uma vez, nesta SPEC, que tem prioridade maior.
-- Decisão D1 aprovada pelo cliente/orientador antes de mexer em `partial`.
+- Decisão D1: aprovada em 2026-11-24 (opção B, issue #17).
 
 ## 7. Como validar
 

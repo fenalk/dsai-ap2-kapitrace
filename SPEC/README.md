@@ -20,10 +20,10 @@ Mantido conforme a [SPEC-FDE 005](SPEC-FDE/005-governanca-specs.md). Ao mesclar 
 | ID | Arquivo | Status | Issue | Implementação | Precedência |
 | --- | --- | --- | --- | --- | --- |
 | SPEC-2026-10-01 | [2026-10-01-threat-analyzer.md](2026-10-01-threat-analyzer.md) | implementada | — | `d046996`, `23be8bc` | Substituída parcialmente pelas três SPECs de 2026-10-06 (ver aviso no arquivo) |
-| SPEC-2026-10-06-real-api | [2026-10-06-real-api-integration.md](2026-10-06-real-api-integration.md) | implementada | upstream #3 | `8f7c94c`, `da1a7d7`, `798e1d1` | Complementa a 10-01. Trecho sobre SQLite substituído pela SPEC de Supabase |
+| SPEC-2026-10-06-real-api | [2026-10-06-real-api-integration.md](2026-10-06-real-api-integration.md) | implementada | upstream #3 | `8f7c94c`, `da1a7d7`, `798e1d1` | Complementa a 10-01. Trecho sobre SQLite substituído pela SPEC de Supabase. Regra de `partial` (§7) alterada pela D1 da SPEC-FDE 001 |
 | SPEC-2026-10-06-auth | [2026-10-06-auth-and-middleware-reactivation.md](2026-10-06-auth-and-middleware-reactivation.md) | implementada | upstream #4 | `45b94f0`, `c8caef2` | Substitui a 10-01 no acesso ao lookup (passa a exigir JWT) |
 | SPEC-2026-10-06-supabase | [2026-10-06-supabase-postgresql-migration.md](2026-10-06-supabase-postgresql-migration.md) | implementada | upstream #2 | `5617970`, `f7b6901`, `ab8e372` (upstream PR #8) | Substitui SQLite em todas as SPECs anteriores |
-| SPEC-FDE 001 | [SPEC-FDE/001-consulta-indicadores-seguranca.md](SPEC-FDE/001-consulta-indicadores-seguranca.md) | implementada | #2 | PR #13 | Pendentes: decisão D1 e validação manual com chaves reais |
+| SPEC-FDE 001 | [SPEC-FDE/001-consulta-indicadores-seguranca.md](SPEC-FDE/001-consulta-indicadores-seguranca.md) | implementada | #2 | PR #13; D1 (opção B): issue #17 | D1 resolvida (opção B). Pendente: validação manual com chaves reais |
 | SPEC-FDE 002 | [SPEC-FDE/002-melhoria-mensagem-erro-login.md](SPEC-FDE/002-melhoria-mensagem-erro-login.md) | proposta | #3 | — | Depende de `ApiError` em `lib/api.ts`, já entregue pela 001 |
 | SPEC-FDE 003 | [SPEC-FDE/003-melhoria-preenchimento-cadastro.md](SPEC-FDE/003-melhoria-preenchimento-cadastro.md) | proposta | #4 | — | Depende da 002. Decisões D1–D4 pendentes |
 | SPEC-FDE 004 | [SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md](SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md) | implementada | #8 | PRs #9 (SPEC), #10 e #11 | Conferência registrada do Definition of Done (E4, cenários "PR real") pendente |
@@ -49,7 +49,7 @@ Legenda: ✅ concluída · 🔶 em andamento ou com pendência · ⏳ SPEC exist
 
 | Ordem | Item | Estado | Depende de | Observação |
 | --- | --- | --- | --- | --- |
-| 1.1 | #17 **D1 da SPEC-FDE 001**: fonte `not_configured` conta como parcial? | ❓ | — | Decidir antes do uso real. Com 2 provedores, toda consulta fica em cache só por 5 min e consome a cota do VirusTotal. A opção B altera a SPEC real-api §7, os testes de `lookup-resilience` e a própria 001. |
+| 1.1 | #17 **D1 da SPEC-FDE 001**: fonte `not_configured` conta como parcial? | ✅ | — | Decidida a opção B em 2026-11-24: `not_configured` não torna o resultado parcial, e o cache volta a durar 24 h com os dois provedores. |
 | 1.2 | #18 **SPEC-FDE 001**: validação manual com chaves reais | 🔶 | 1.1 | Código mesclado (PR #13). Falta executar "Como validar", parte manual, e passar o status para `validada`. |
 | 1.3 | #20 **Deploy** (backend, frontend, Supabase, variáveis, CORS, verificação após subir) | ✏️ | 1.2 | Substitui o stub `2026-09-30-deployment-strategy.md`. Antes de escrever, definir onde hospedar. |
 | 1.4 | #19 **Limite de tentativas no login** | ✏️ | — | Pendência de segurança da 002. Obrigatório antes de um deploy público: pode ser parte da SPEC de deploy (1.3) ou uma SPEC própria. A enumeração por tempo de resposta pode entrar junto. |
