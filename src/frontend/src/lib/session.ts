@@ -9,6 +9,7 @@ export const hasSession = (): boolean => token !== null;
 export const serverSessionSnapshot = (): boolean => false;
 /** Why the last session ended ("logout", "expired") or null; tells RequireSession which login message to show. */
 export const getSessionEndReason = (): SessionEndReason => endReason;
+export const serverEndReasonSnapshot = (): SessionEndReason => null;
 export function subscribeSession(listener: () => void): () => void {
   listeners.add(listener);
   return () => { listeners.delete(listener); };
@@ -39,8 +40,8 @@ export function expireSession(failedToken: string | null): void {
   if (failedToken !== null && token === failedToken) endSession('expired');
 }
 /**
- * E-mail claim of the current token, for display only. The server validates the token;
- * nothing here is trusted for authorization.
+ * E-mail claim of the current token, for display only. The signature is NOT checked here (the server does that),
+ * so the value is never used for authorization or any other decision; anything that is not a plain e-mail is dropped.
  */
 export function getSessionEmail(): string | null {
   if (!token) return null;
@@ -49,6 +50,6 @@ export function getSessionEmail(): string | null {
     const bytes = Uint8Array.from(atob(payload.padEnd(Math.ceil(payload.length / 4) * 4, '=')), char => char.charCodeAt(0));
     const claims: unknown = JSON.parse(new TextDecoder().decode(bytes));
     const email = claims && typeof claims === 'object' ? (claims as Record<string, unknown>).email : null;
-    return typeof email === 'string' && email.length <= 254 ? email : null;
+    return typeof email === 'string' && email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null;
   } catch { return null; }
 }

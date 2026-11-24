@@ -7,7 +7,7 @@ const noEmailOnServer = (): string | null => null;
 
 /**
  * Account disclosure in the top bar (F2.4): shows who is signed in and the "Sair" action.
- * The panel stays in the DOM (hidden) so the action is always reachable by tests and assistive tech once opened.
+ * Closed, the panel is `hidden` (not focusable, not announced), as a disclosure should be; opening it exposes "Sair".
  */
 export default function UserMenu() {
   const email = useSyncExternalStore(subscribeSession, getSessionEmail, noEmailOnServer);

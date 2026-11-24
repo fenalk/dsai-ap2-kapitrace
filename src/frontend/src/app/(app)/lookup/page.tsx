@@ -52,7 +52,8 @@ function LookupContent() {
     event.preventDefault();
     void runSearch(query);
   }
-  // F2.2: an address with ?q= (landing, login redirect, watchlist) runs the lookup once per type+indicator.
+  // F2.2: opening an address with ?q= (landing, login redirect, watchlist) runs the lookup once for that address;
+  // re-renders of the same type+q do not repeat it. useEffectEvent is stable API since React 19.2 (package.json pins 19.2.x).
   const searchFromAddress = useEffectEvent((indicator: string) => {
     setQuery(indicator);
     void runSearch(indicator);

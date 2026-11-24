@@ -97,6 +97,11 @@ describe('Client session and mandatory Bearer transport', () => {
     assert.equal(getSessionEmail(), null);
     setSessionToken(signTestJwt(testClaims({ email: 42 }), 'k'));
     assert.equal(getSessionEmail(), null);
+    // Unsigned display value: anything that is not a plain e-mail is dropped.
+    for (const forged of ['<b>admin</b>', 'two words@example.com', 'no-at-sign', 'x@nodot']) {
+      setSessionToken(signTestJwt(testClaims({ email: forged }), 'k'));
+      assert.equal(getSessionEmail(), null, forged);
+    }
   });
   it('allows login without existing session and handles malformed JSON', async () => {
     globalThis.fetch = async (_input, init) => { assert.equal(new Headers(init?.headers).has('Authorization'), false); return json({ success: true }); };
