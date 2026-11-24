@@ -3,7 +3,7 @@
 - **ID:** SPEC-FDE 006
 - **Prioridade:** P1
 - **Data:** 2026-11-24
-- **Status:** aprovada (pedido de implementação do responsável pelo repositório em 2026-11-24; issue #35)
+- **Status:** implementada (aprovada pelo responsável pelo repositório em 2026-11-24, issue #35; F1–F6 nas PRs #44–#49). Pendente para `validada`: a parte manual de "Como validar" (seção 8)
 - **Agente:** Claude Code (Claude Opus 5.5)
 - **Origem:** pedido do responsável: "um frontend moderno, responsivo e que seja possível realizar toda a experiência do usuário". Issue mãe #35, sub-issues #36–#42.
 - **SPECs relacionadas:** `SPEC/SPEC-FDE/001-consulta-indicadores-seguranca.md` (textos e estados da consulta), `SPEC/SPEC-FDE/002-melhoria-mensagem-erro-login.md` e `SPEC/SPEC-FDE/003-melhoria-preenchimento-cadastro.md` (conteúdo da tela de login), `SPEC/2026-10-06-auth-and-middleware-reactivation.md` (sessão só em memória)
