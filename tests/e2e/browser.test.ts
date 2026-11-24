@@ -100,10 +100,22 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
       await evaluate(`(() => { const link = document.querySelector('a[href="${pathname}"]'); if (!link) throw new Error('Navigation link missing'); link.click(); })()`);
       await until(async () => await evaluate(`location.pathname === ${JSON.stringify(pathname)}`));
     };
+    // F3: "Entrar" is both a tab and the submit label, so the form is submitted through its submit button.
+    const submitLogin = async () => evaluate(`document.querySelector('form.auth-form button[type="submit"]').click()`);
+    const selectedTab = () => evaluate(`document.querySelector('[role="tablist"] [role="tab"][aria-selected="true"]')?.textContent`);
     const waitForLogin = () => until(async () => await evaluate(`location.pathname === '/login' && Boolean(document.querySelector('#email'))`));
     const waitForLookup = () => until(async () => await evaluate(`location.pathname === '/lookup' && Boolean(document.querySelector('[aria-label="Indicador"]'))`));
     const email = `browser-${Date.now()}@example.com`;
-    await navigate('/login'); await button('Criar conta');
+    await navigate('/login');
+    // F3.1/F3.2: login and sign-up are tabs; the password can be shown and hidden again.
+    assert.equal(await selectedTab(), 'Entrar');
+    await button('Criar conta');
+    await until(async () => await selectedTab() === 'Criar conta' && await evaluate(`Boolean(document.querySelector('#name'))`));
+    assert.equal(await evaluate(`document.querySelector('#auth-panel').getAttribute('aria-labelledby')`), 'auth-tab-register');
+    await evaluate(`document.querySelector('.input-adornment').click()`);
+    await until(async () => await evaluate(`document.querySelector('#password').type === 'text' && document.querySelector('.input-adornment').getAttribute('aria-pressed') === 'true'`));
+    await evaluate(`document.querySelector('.input-adornment').click()`);
+    await until(async () => await evaluate(`document.querySelector('#password').type === 'password'`));
     await fill('#name', 'Browser Analyst'); await fill('#email', email); await fill('#password', 'BrowserTestOnly-2026!');
     await button('Criar conta e entrar'); await waitForLookup();
     assert.equal(await evaluate(`sessionStorage.getItem('kapitrace.session') === null && localStorage.getItem('kapitrace.session') === null`), true);
@@ -116,17 +128,17 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
     await button('Sair'); await waitForLogin();
     assert.equal(await evaluate(`location.search`), '?saiu=1');
     await until(async () => await evaluate(`document.querySelector('[role="status"]')?.textContent.includes('Você saiu da sua conta.')`));
-    await fill('#email', email); await fill('#password', 'WrongTestOnlyPassword!'); await button('Entrar');
+    await fill('#email', email); await fill('#password', 'WrongTestOnlyPassword!'); await submitLogin();
     await until(async () => await evaluate(`document.querySelector('[role="alert"]')?.textContent.includes('Invalid credentials')`));
     assert.equal(await evaluate(`location.pathname`), '/login');
     assert.equal(calls.length, 0);
     await fill('#password', 'BrowserTestOnly-2026!');
     await send('Network.setBlockedURLs', { urls: [`${backend.url}/api/auth/login`] });
-    await button('Entrar');
+    await submitLogin();
     await until(async () => await evaluate(`document.querySelector('[role="alert"]')?.textContent.includes('Não foi possível conectar')`));
     assert.equal(await evaluate(`location.pathname`), '/login');
     await send('Network.setBlockedURLs', { urls: [] });
-    await button('Entrar'); await waitForLookup();
+    await submitLogin(); await waitForLookup();
     await fill('[aria-label="Indicador"]', '8.8.8.8'); await button('Analisar');
     await until(async () => await evaluate(`document.querySelector('[data-testid="lookup-result"]') !== null`));
     assert.equal(await evaluate(`document.querySelector('[data-testid="threat-score"]').textContent`), '75');
@@ -183,7 +195,7 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
     // F2.5: 401 keeps the destination and says the session expired.
     assert.deepEqual(await evaluate(`Object.fromEntries(new URLSearchParams(location.search))`), { next: '/lookup?type=ip', expirou: '1' });
     await until(async () => await evaluate(`document.querySelector('[role="status"]')?.textContent.includes('Sua sessão expirou. Entre novamente.')`));
-    await fill('#email', email); await fill('#password', 'BrowserTestOnly-2026!'); await button('Entrar'); await waitForLookup();
+    await fill('#email', email); await fill('#password', 'BrowserTestOnly-2026!'); await submitLogin(); await waitForLookup();
     assert.equal(await evaluate(`location.search`), '?type=ip');
     await send('Page.reload'); await waitForLogin();
     assert.equal(await evaluate(`document.querySelector('[data-testid="lookup-result"]')`), null);
@@ -192,7 +204,7 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
     await send('Page.navigate', { url: `http://127.0.0.1:${port}/lookup?type=ip&q=8.8.8.8` }); await waitForLogin();
     assert.equal(await evaluate(`new URLSearchParams(location.search).get('next')`), '/lookup?type=ip&q=8.8.8.8');
     await delay(400);
-    await fill('#email', email); await fill('#password', 'BrowserTestOnly-2026!'); await button('Entrar'); await waitForLookup();
+    await fill('#email', email); await fill('#password', 'BrowserTestOnly-2026!'); await submitLogin(); await waitForLookup();
     await until(async () => await evaluate(`document.querySelector('[data-testid="lookup-source"]')?.textContent === 'cache'`));
     assert.equal(await evaluate(`document.querySelector('[aria-label="Indicador"]').value`), '8.8.8.8');
     assert.equal(lookupRequests.filter(request => request.hasBearer).length, lookupRequests.length);

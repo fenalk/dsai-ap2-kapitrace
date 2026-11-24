@@ -6,10 +6,13 @@ export interface TabItem<T extends string> { value: T; label: string; disabled?:
 interface TabsProps<T extends string> {
   items: TabItem<T>[];
   value: T;
-  onChange: (value: T) => void;
+  /** `source` tells keyboard selection (focus stays on the tab) from a click (the caller may move focus). */
+  onChange: (value: T, source: 'keyboard' | 'pointer') => void;
   label: string;
   /** id of the panel the tabs control, when there is one. */
   controls?: string;
+  /** When set, each tab gets the id `${idPrefix}-${value}` so the panel can reference it with aria-labelledby. */
+  idPrefix?: string;
   className?: string;
 }
 
@@ -17,7 +20,7 @@ interface TabsProps<T extends string> {
  * WAI-ARIA tabs with roving tabindex: only the selected tab is in the Tab order,
  * arrows/Home/End move between tabs and select them.
  */
-export default function Tabs<T extends string>({ items, value, onChange, label, controls, className }: TabsProps<T>) {
+export default function Tabs<T extends string>({ items, value, onChange, label, controls, idPrefix, className }: TabsProps<T>) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const enabled = items.map((item, index) => ({ item, index })).filter(entry => !entry.item.disabled);
 
@@ -31,7 +34,7 @@ export default function Tabs<T extends string>({ items, value, onChange, label, 
     if (next === null || enabled.length === 0) return;
     event.preventDefault();
     const target = enabled[next];
-    onChange(target.item.value);
+    onChange(target.item.value, 'keyboard');
     refs.current[target.index]?.focus();
   }
 
@@ -44,13 +47,14 @@ export default function Tabs<T extends string>({ items, value, onChange, label, 
             key={item.value}
             ref={element => { refs.current[index] = element; }}
             type="button"
+            id={idPrefix ? `${idPrefix}-${item.value}` : undefined}
             role="tab"
             className="tab"
             aria-selected={selected}
             aria-controls={controls}
             tabIndex={selected ? 0 : -1}
             disabled={item.disabled}
-            onClick={() => onChange(item.value)}
+            onClick={event => onChange(item.value, event.detail === 0 ? 'keyboard' : 'pointer')}
           >
             {item.label}
           </button>
