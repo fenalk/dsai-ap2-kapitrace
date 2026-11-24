@@ -3,7 +3,7 @@
 - **ID:** SPEC-FDE 007
 - **Prioridade:** P0
 - **Data:** 2026-11-24
-- **Status:** aprovada (2026-11-24, pela responsável pelo repositório, com as recomendações de D1–D3)
+- **Status:** implementada (SPEC: PRs #54/#55; código: commit `5ae1aed`). Aprovada em 2026-11-24 pela responsável pelo repositório, com as recomendações de D1–D3. Pendente: validação manual ("Como validar", parte manual)
 - **Agente:** Claude Code (Claude Opus 5.5)
 - **Origem:** issue #19 (item 1.4 da ordem de implementação); pendências de segurança da [SPEC-FDE 002](2026-11-18-melhoria-mensagem-erro-login.md) ("Pendências de segurança observadas")
 - **SPECs relacionadas:** [`2026-10-06-auth-and-middleware-reactivation.md`](../2026-10-06-auth-and-middleware-reactivation.md), [SPEC-FDE 002](2026-11-18-melhoria-mensagem-erro-login.md) (mensagem do 429 na tela), [`2026-10-06-real-api-integration.md`](../2026-10-06-real-api-integration.md) §6 (padrão de limite e `Retry-After` do lookup)
