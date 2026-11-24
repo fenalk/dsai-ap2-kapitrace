@@ -29,6 +29,7 @@ Mantido conforme a [SPEC-FDE 005](SPEC-FDE/2026-11-19-governanca-specs.md). Ao m
 | SPEC-FDE 004 | [SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md](SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md) | implementada | #8 | PRs #9 (SPEC), #10 e #11 | Conferência registrada do Definition of Done (E4, cenários "PR real") pendente |
 | SPEC-FDE 005 | [SPEC-FDE/2026-11-19-governanca-specs.md](SPEC-FDE/2026-11-19-governanca-specs.md) | implementada | — | PRs #15 e #16 (E5) | Só governança; nenhum requisito muda |
 | SPEC-FDE 006 | [SPEC-FDE/2026-11-24-experiencia-frontend.md](SPEC-FDE/2026-11-24-experiencia-frontend.md) | implementada | #35 (#36–#42) | PR #43 (SPEC); F1: PR #44; F2: PR #45; F3: PR #46; F4: PR #47; F5: PR #48; F6: PR #49 | Pendente: validação manual (seção 8, "Manual"). Substitui o stub `2026-09-30-frontend-architecture.md`. Não altera os textos de login da 002/003 |
+| SPEC-FDE 007 | [SPEC-FDE/2026-11-24-limite-tentativas-login.md](SPEC-FDE/2026-11-24-limite-tentativas-login.md) | aprovada | #19 | — | D1–D3 aprovadas com a recomendação. Pré-requisito do deploy (#20). Não altera a tela: o texto do 429 é da 002 |
 
 "upstream" é o repositório de origem `hug0mgs/dsai-ap1-kapitrace`. Os demais números são issues/PRs deste repositório.
 
@@ -52,7 +53,7 @@ Legenda: ✅ concluída · 🔶 em andamento ou com pendência · ⏳ SPEC exist
 | 1.1 | #17 **D1 da SPEC-FDE 001**: fonte `not_configured` conta como parcial? | ✅ | — | Decidida a opção B em 2026-11-24: `not_configured` não torna o resultado parcial, e o cache volta a durar 24 h com os dois provedores. |
 | 1.2 | #18 **SPEC-FDE 001**: validação manual com chaves reais | 🔶 | 1.1 | Código mesclado (PR #13). Falta executar "Como validar", parte manual, e passar o status para `validada`. |
 | 1.3 | #20 **Deploy** (backend, frontend, Supabase, variáveis, CORS, verificação após subir) | ✏️ | 1.2 | Substitui o stub `2026-09-30-deployment-strategy.md`. Antes de escrever, definir onde hospedar. |
-| 1.4 | #19 **Limite de tentativas no login** | ✏️ | — | Pendência de segurança da 002. Obrigatório antes de um deploy público: pode ser parte da SPEC de deploy (1.3) ou uma SPEC própria. A enumeração por tempo de resposta pode entrar junto. |
+| 1.4 | #19 **SPEC-FDE 007**: limite de tentativas no login e tempo de resposta | ⏳ (`aprovada`) | — | Pendência de segurança da 002. Obrigatório antes de um deploy público (1.3). Inclui a enumeração por tempo de resposta e o log sanitizado. |
 
 ### Fase 2 — Experiência básica
 
@@ -103,7 +104,7 @@ Para trabalhar num desses temas, escreva uma SPEC nova em `SPEC/SPEC-FDE/` (seç
 
 ## Como criar uma SPEC nova
 
-- **Local e nome:** `SPEC/SPEC-FDE/AAAA-MM-DD-<slug-em-kebab-case>.md`, com a data de criação da SPEC (a mesma do campo **Data** do cabeçalho). O ID sequencial `SPEC-FDE NNN` fica só no cabeçalho e no índice (próximo: `007`).
+- **Local e nome:** `SPEC/SPEC-FDE/AAAA-MM-DD-<slug-em-kebab-case>.md`, com a data de criação da SPEC (a mesma do campo **Data** do cabeçalho). O ID sequencial `SPEC-FDE NNN` fica só no cabeçalho e no índice (próximo: `008`).
 - **Ordem:** a SPEC é commitada (e, se possível, mesclada numa PR própria) antes do código que a implementa.
 - **Não renomeie SPECs existentes:** trailers `Spec:` já gravados no histórico apontam para os caminhos atuais. Exceção: em 2026-11-24, a pedido da responsável pelo repositório, as SPECs-FDE 001, 002, 003, 005 e 006 trocaram o prefixo `NNN-` pela data de criação. Trailers anteriores citam os nomes antigos (`SPEC/SPEC-FDE/001-…`, etc.); para seguir o histórico, use `git log --follow -- <caminho novo>`.
 
