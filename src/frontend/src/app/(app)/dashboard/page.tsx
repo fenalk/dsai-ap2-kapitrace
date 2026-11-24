@@ -10,7 +10,7 @@ import Card from '@/components/ui/Card';
 import EmptyState from '@/components/ui/EmptyState';
 import Icon from '@/components/ui/Icon';
 import Skeleton from '@/components/ui/Skeleton';
-import { useToast } from '@/components/ui/Toast';
+import { useDismissToast, useToast } from '@/components/ui/Toast';
 
 const UNDO_WINDOW_MS = 6000;
 const dateFormat = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
@@ -35,6 +35,7 @@ function LoadingRows() {
 
 function WatchlistContent() {
   const toast = useToast();
+  const dismissToast = useDismissToast();
   const [items, setItems] = useState<WatchlistItem[]>([]);
   const [loadError, setLoadError] = useState('');
   const [actionError, setActionError] = useState('');
@@ -72,21 +73,27 @@ function WatchlistContent() {
     }
   }
 
-  // F5.4: optimistic removal with a 6 s "Desfazer"; a failed DELETE puts the item back and shows the error.
+  // F5.4: optimistic removal with a 6 s "Desfazer"; a failed DELETE puts the item back, shows the error and closes
+  // the toast (its action no longer applies). The index is the one at click time; restoreItem clamps it, so after
+  // other removals the item comes back close to, not necessarily at, its old place.
   function remove(item: WatchlistItem) {
     const index = items.findIndex(current => current.id === item.id);
     setActionError('');
     setItems(current => current.filter(entry => entry.id !== item.id));
+    let toastId: number | null = null;
     const deletion = api(`/api/watchlist/${encodeURIComponent(item.id)}`, { method: 'DELETE' }).then(
       () => true,
       failure => {
         setItems(current => restoreItem(current, item, index));
         setActionError(`Não foi possível remover ${item.itemValue}: ${message(failure, 'falha ao remover')}`);
+        if (toastId !== null) dismissToast(toastId);
         return false;
       }
     );
     deletions.current.set(item.id, deletion);
-    toast({ message: 'Removido', tone: 'info', duration: UNDO_WINDOW_MS, action: { label: 'Desfazer', onClick: () => { void undo(item, index); } } });
+    // Past the undo window nobody can ask for this outcome any more.
+    window.setTimeout(() => { if (deletions.current.get(item.id) === deletion) deletions.current.delete(item.id); }, UNDO_WINDOW_MS + 1000);
+    toastId = toast({ message: 'Removido', tone: 'info', duration: UNDO_WINDOW_MS, action: { label: 'Desfazer', onClick: () => { void undo(item, index); } } });
   }
 
   const counts = countByFilter(items);

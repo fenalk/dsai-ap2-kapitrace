@@ -28,7 +28,7 @@ Mantido conforme a [SPEC-FDE 005](SPEC-FDE/005-governanca-specs.md). Ao mesclar 
 | SPEC-FDE 003 | [SPEC-FDE/003-melhoria-preenchimento-cadastro.md](SPEC-FDE/003-melhoria-preenchimento-cadastro.md) | proposta | #4 | — | Depende da 002. Decisões D1–D4 pendentes |
 | SPEC-FDE 004 | [SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md](SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md) | implementada | #8 | PRs #9 (SPEC), #10 e #11 | Conferência registrada do Definition of Done (E4, cenários "PR real") pendente |
 | SPEC-FDE 005 | [SPEC-FDE/005-governanca-specs.md](SPEC-FDE/005-governanca-specs.md) | implementada | — | PRs #15 e #16 (E5) | Só governança; nenhum requisito muda |
-| SPEC-FDE 006 | [SPEC-FDE/006-experiencia-frontend.md](SPEC-FDE/006-experiencia-frontend.md) | aprovada | #35 (#36–#42) | PR #43 (SPEC); F1: PR #44; F2: PR #45; F3: PR #46; F4: PR #47 | Em implementação (F5–F6 pendentes). Substitui o stub `2026-09-30-frontend-architecture.md`. Não altera os textos de login da 002/003 |
+| SPEC-FDE 006 | [SPEC-FDE/006-experiencia-frontend.md](SPEC-FDE/006-experiencia-frontend.md) | implementada | #35 (#36–#42) | PR #43 (SPEC); F1: PR #44; F2: PR #45; F3: PR #46; F4: PR #47; F5: PR #48; F6: PR #49 | Pendente: validação manual (seção 8, "Manual"). Substitui o stub `2026-09-30-frontend-architecture.md`. Não altera os textos de login da 002/003 |
 
 "upstream" é o repositório de origem `hug0mgs/dsai-ap1-kapitrace`. Os demais números são issues/PRs deste repositório.
 
@@ -61,7 +61,7 @@ Legenda: ✅ concluída · 🔶 em andamento ou com pendência · ⏳ SPEC exist
 | 2.1 | #3 **SPEC-FDE 002**: mensagens de erro no login | ⏳ (`proposta`) | aprovação | `ApiError` de `lib/api.ts` já existe (001). Cria as classes de erro reutilizadas pela 003. |
 | 2.2 | #4 **SPEC-FDE 003**: preenchimento do cadastro | ⏳ (`proposta`) | 2.1; decisões D1–D4 | Mesmo componente da 002 (`login/page.tsx`): implementar depois dela para evitar conflito. Resolver junto a divergência da regra de senha (D4). |
 | 2.3 | #21 **Sessão persistente** (usar `/api/auth/refresh`) | ✏️ ❓ | confirmação do cliente | Hoje recarregar a página faz logout. A sessão só em memória foi uma regra de segurança do cliente: confirmar com ele antes de especificar. |
-| 2.4 | #35 **SPEC-FDE 006**: experiência do frontend (fundação visual, navegação, login visual, consulta, watchlist, acessibilidade) | 🔶 | — | Seis PRs, uma por sub-issue (#37–#42). F1 a F4 mescladas (PRs #44 a #47). Login: só a parte visual, sem conflitar com 2.1/2.2. Não inclui a sessão persistente (2.3). |
+| 2.4 | #35 **SPEC-FDE 006**: experiência do frontend (fundação visual, navegação, login visual, consulta, watchlist, acessibilidade) | 🔶 | — | Seis PRs, uma por sub-issue (#37–#42): PRs #44 a #49. Falta a validação manual da seção 8 para `validada`. Login: só a parte visual, sem conflitar com 2.1/2.2. Não inclui a sessão persistente (2.3). |
 
 ### Fase 3 — Medir e dar valor
 

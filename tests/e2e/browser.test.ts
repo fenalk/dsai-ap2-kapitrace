@@ -37,7 +37,7 @@ async function stop(child: ChildProcess | undefined) {
   await exited;
 }
 
-it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 and reload', { timeout: 180000 }, async () => {
+it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401, reload and phone journey', { timeout: 180000 }, async () => {
   const backend = await startTestServer();
   let frontend: ChildProcess | undefined;
   let chrome: ChildProcess | undefined;
@@ -151,6 +151,8 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
     await submitLogin(); await waitForLookup();
     await fill('[aria-label="Indicador"]', '8.8.8.8'); await button('Analisar');
     await until(async () => await evaluate(`document.querySelector('[data-testid="lookup-result"]') !== null`));
+    // F6.1: focus lands on the result title.
+    await until(async () => await evaluate(`document.activeElement?.id === 'lookup-result-title'`));
     assert.equal(await evaluate(`document.querySelector('[data-testid="threat-score"]').textContent`), '75');
     assert.equal(await lookupSource(), 'api');
     assert.equal(await text('[data-testid="lookup-source"]'), 'Consulta nova');
@@ -194,7 +196,7 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
     await fill('[aria-label="Buscar no valor"]', '');
     // F5.4: removal is immediate and can be undone from the toast for 6 s.
     await button('Remover');
-    await until(async () => (await watchItems()).length === 0 && await evaluate(`[...document.querySelectorAll('.toast')].some(t => t.textContent.includes('Removido'))`));
+    await until(async () => (await watchItems()).length === 0 && await evaluate(`[...document.querySelectorAll('[data-testid="toast"]')].some(t => t.textContent.includes('Removido'))`));
     await button('Desfazer');
     await until(async () => (await watchItems()).includes('8.8.8.8'));
     // F5.3: "Consultar" reopens the lookup, which runs by itself (F2.2) and keeps "Na watchlist" (F4.13).
@@ -207,6 +209,8 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
     await until(async () => await evaluate(`document.body.textContent.includes('Nenhum indicador monitorado')`));
     await clientNavigate('/lookup'); await waitForLookup(); await fill('[aria-label="Indicador"]', '999.1.2.3'); await button('Analisar');
     await until(async () => await evaluate(`document.querySelector('[role="alert"]')?.textContent.startsWith('IP inválido')`));
+    // F6.1: ... or on the error.
+    await until(async () => await evaluate(`document.activeElement?.id === 'lookup-error'`));
     assert.equal(await evaluate(`document.querySelector('[data-testid="lookup-result"]')`), null);
     await fill('[aria-label="Indicador"]', '10.0.0.1'); await button('Analisar');
     await until(async () => await evaluate(`document.querySelector('[role="alert"]')?.textContent === 'Apenas IPs públicos podem ser consultados.'`));
@@ -278,6 +282,65 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401 an
     await navigateToType('ip');
     await fill('[aria-label="Indicador"]', 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
     assert.equal(await evaluate(`document.querySelector('input[name="indicator-type"]:checked').value`), 'hash');
+
+    // F6.4: the whole journey again on a phone (390 x 844), with real key presses where a user would use them.
+    const press = async (key: string, code: string, keyCode: number, extra: Record<string, unknown> = {}) => {
+      await send('Input.dispatchKeyEvent', { type: 'keyDown', key, code, windowsVirtualKeyCode: keyCode, ...extra });
+      await send('Input.dispatchKeyEvent', { type: 'keyUp', key, code, windowsVirtualKeyCode: keyCode });
+    };
+    const typeInto = async (selector: string, value: string) => {
+      await evaluate(`(() => { const element = document.querySelector(${JSON.stringify(selector)}); element.focus(); element.select(); })()`);
+      await send('Input.insertText', { text: value });
+    };
+    const noHorizontalScroll = async (where: string) => assert.equal(await evaluate(`document.documentElement.scrollWidth - window.innerWidth <= 0`), true, `horizontal scroll on ${where}`);
+    const drawerOpen = () => evaluate(`document.querySelector('.menu-toggle').getAttribute('aria-expanded') === 'true'`);
+    const mobileBaseline = calls.length;
+    await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+    try {
+      // Landing (a reload drops the memory session) → search → login → result, without clicking "Analisar" (acceptance 2).
+      await navigate('/');
+      await noHorizontalScroll('/');
+      await typeInto('[aria-label="Indicador inicial"]', 'hxxps://Exemplo[.]com/path');
+      await press('Enter', 'Enter', 13, { text: '\r' });
+      await waitForLogin();
+      await noHorizontalScroll('/login');
+      await delay(400);
+      await fill('#email', email); await fill('#password', 'BrowserTestOnly-2026!'); await submitLogin(); await waitForLookup();
+      await until(async () => await lookupSource() === 'cache' && await text('[data-testid="lookup-result"] .result-indicator code') === 'exemplo.com');
+      await until(async () => await evaluate(`document.activeElement?.id === 'lookup-result-title'`));
+      await noHorizontalScroll('/lookup');
+      await until(async () => { const status = await watchStatus(); return status?.text === 'Adicionar à Watchlist' && !status.disabled; });
+      await button('Adicionar à Watchlist');
+      await until(async () => (await watchStatus())?.text === 'Na watchlist');
+      // F1.5 drawer: opens from the menu button, keeps focus inside, closes with Esc and returns focus to the button.
+      assert.equal(await evaluate(`getComputedStyle(document.querySelector('.menu-toggle')).display !== 'none'`), true);
+      await evaluate(`document.querySelector('.menu-toggle').click()`);
+      await until(async () => await drawerOpen() && await evaluate(`document.getElementById('app-sidebar').contains(document.activeElement)`));
+      await press('Escape', 'Escape', 27);
+      await until(async () => !(await drawerOpen()) && await evaluate(`document.activeElement === document.querySelector('.menu-toggle')`));
+      // ... and closes when a link is followed.
+      await evaluate(`document.querySelector('.menu-toggle').click()`);
+      await until(async () => await drawerOpen());
+      await evaluate(`document.querySelector('#app-sidebar a[href="/dashboard"]').click()`);
+      await until(async () => await evaluate(`location.pathname === '/dashboard'`) && !(await drawerOpen()));
+      // F5.1: on a phone each item is a card.
+      await until(async () => (await watchItems()).includes('exemplo.com'));
+      assert.equal(await evaluate(`getComputedStyle(document.querySelector('[data-testid="watchlist-item"]')).display`), 'grid');
+      await noHorizontalScroll('/dashboard');
+      // Back to the lookup from the list, then a new lookup submitted with Enter.
+      await evaluate(`document.querySelector('[data-testid="watchlist-lookup"]').click()`);
+      await until(async () => await evaluate(`location.pathname === '/lookup'`) && await lookupSource() === 'cache' && (await watchStatus())?.text === 'Na watchlist');
+      await typeInto('[aria-label="Indicador"]', '8.8.8.8');
+      await press('Enter', 'Enter', 13, { text: '\r' });
+      await until(async () => await text('[data-testid="lookup-result"] .result-indicator code') === '8.8.8.8' && await lookupSource() === 'cache');
+      assert.deepEqual(await evaluate(`[...document.querySelectorAll('[data-testid="recent-lookups"] code')].map(code => code.textContent)`), ['8.8.8.8', 'exemplo.com']);
+      // Sign out from the account menu.
+      await evaluate(`document.querySelector('.user-menu-toggle').click()`);
+      await until(async () => await evaluate(`document.querySelector('.user-menu-panel').hidden === false`));
+      await button('Sair'); await waitForLogin();
+      assert.equal(await evaluate(`location.search`), '?saiu=1');
+      assert.equal(calls.length, mobileBaseline, 'the phone journey is served from cache');
+    } finally { await send('Emulation.clearDeviceMetricsOverride'); }
   } catch (error) { throw new Error(`${String(error)}\nFrontend output:\n${frontendLog}`); }
   finally { socket?.close(); await stop(chrome); await stop(frontend); await backend.close(); await rm(directory, { recursive: true, force: true }); }
 });

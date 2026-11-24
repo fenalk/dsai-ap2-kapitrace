@@ -71,9 +71,16 @@ function LookupContent() {
   const [addError, setAddError] = useState('');
   const [now, setNow] = useState(0);
   const [cooldownUntil, setCooldownUntil] = useState(0);
+  // F6.1: after each lookup, focus goes to the result title or to the error, so keyboard and screen reader users land on it.
+  const [focusRequest, setFocusRequest] = useState<{ target: 'result' | 'error'; id: number } | null>(null);
   const recent = useSyncExternalStore(subscribeRecentLookups, getRecentLookups, serverRecentLookups);
   const generation = useRef(0);
   const autoSearched = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!focusRequest) return;
+    document.getElementById(focusRequest.target === 'result' ? 'lookup-result-title' : 'lookup-error')?.focus();
+  }, [focusRequest]);
   const appliedUrlType = useRef(urlType);
 
   const type: LookupType = manualType ?? (query.trim() ? detectIndicatorType(query) : 'ip');
@@ -114,6 +121,7 @@ function LookupContent() {
       if (current !== generation.current) return;
       setNow(clock());
       setResult(data);
+      setFocusRequest(previous => ({ target: 'result', id: (previous?.id ?? 0) + 1 }));
       // An answer that arrives after sign out must not seed the next session's list (F4.14).
       if (hasSession()) rememberLookup({ type: data.type, indicator: data.indicator });
       void checkWatchlist(data, current);
@@ -121,6 +129,7 @@ function LookupContent() {
       if (current !== generation.current) return;
       const failureInfo = lookupError(failure, searchType);
       setError(failureInfo);
+      setFocusRequest(previous => ({ target: 'error', id: (previous?.id ?? 0) + 1 }));
       if (failureInfo.retryIn) {
         const started = clock();
         setNow(started);
@@ -245,11 +254,12 @@ function LookupContent() {
       <ResultSkeleton />
     </>}
 
-    {error && <Card data-testid="lookup-error">
+    {error && <Card data-testid="lookup-error" id="lookup-error" tabIndex={-1} className="focus-target">
       <Alert tone="danger"><p>{error.message}</p></Alert>
       {error.sources && <><CardHeader title="Situação das fontes" /><SourceGroups sources={error.sources} /></>}
     </Card>}
 
+    {result && <h2 id="lookup-result-title" className="result-title focus-target" tabIndex={-1}>Resultado para <code>{result.indicator}</code></h2>}
     {result && <div className="result-grid" data-testid="lookup-result">
       <div className="result-sidebar">
         <Card className="result-score-card">

@@ -59,17 +59,20 @@ dsai-ap1-KapiTrace/
 │   └── 2026-10-06-supabase-postgresql-migration.md
 │
 ├── src/
-│   ├── frontend/                # Next.js 15 App Router
+│   ├── frontend/                # Next.js 16 App Router (React 19)
 │   │   └── src/
 │   │       ├── app/
-│   │       │   ├── page.tsx         # Landing page
-│   │       │   ├── login/page.tsx   # Auth page
-│   │       │   ├── dashboard/       # Dashboard (layout + page)
-│   │       │   └── lookup/          # Lookup (layout + page)
+│   │       │   ├── page.tsx         # Landing com busca inicial
+│   │       │   ├── login/page.tsx   # Entrar / Criar conta (abas)
+│   │       │   ├── (app)/           # Shell autenticado (sidebar, gaveta no celular)
+│   │       │   │   ├── lookup/      # Consulta (/lookup)
+│   │       │   │   └── dashboard/   # Watchlist (/dashboard)
+│   │       │   └── globals.css      # Tokens e design system
 │   │       ├── components/
-│   │       │   ├── Sidebar.tsx
-│   │       │   └── Topbar.tsx
-│   │       └── globals.css          # Design system completo
+│   │       │   ├── AppShell.tsx, UserMenu.tsx, RequireSession.tsx
+│   │       │   ├── lookup/          # Medidor, cobertura, fontes, skeleton, copiar
+│   │       │   └── ui/              # Botão, campo, card, badge, alerta, toast, abas, ícones
+│   │       └── lib/                 # Regras puras testáveis + sessão/API em memória
 │   │
 │   └── backend/                 # Express.js API
 │       ├── src/
@@ -110,8 +113,25 @@ npm run dev            # Dev server com hot-reload (tsx watch)
 cd src/frontend
 cp .env.example .env.local # NEXT_PUBLIC_API_BASE_URL
 npm install
-npm run dev            # http://localhost:3000
+npm run dev            # http://localhost:3000 (outra porta: npm run dev -- --port 3001)
 ```
+
+### Telas e percurso do frontend
+
+Especificação: [SPEC-FDE 006](SPEC/SPEC-FDE/006-experiencia-frontend.md). O percurso completo funciona no desktop e no celular: landing → cadastro/login → consulta → resultado → watchlist → nova consulta → sair.
+
+| Tela | O que oferece |
+| --- | --- |
+| `/` | Busca inicial: leva a `/lookup?type=…&q=…`; sem sessão, passa pelo login e volta com o indicador. Mostra "Entrar" ou "Ir para consultas" conforme a sessão. |
+| `/login` | Abas "Entrar" / "Criar conta", mostrar/ocultar senha. Após entrar, vai ao destino `next` (somente caminhos internos) ou a `/lookup`. Avisos de "Você saiu" e "Sua sessão expirou". |
+| `/lookup` | Campo único com detecção do tipo (IP, domínio, hash), editável. Aceita indicadores "defanged" (`8.8.8[.]8`, `hxxps://…`) e URLs, mostrando "Consultando como: …". Skeleton durante a consulta (até 10 s) e contagem regressiva com `Retry-After`. Resultado com medidor do ThreatScore por faixa (Baixo, Suspeito, Alto, Crítico), cobertura de evidências ("—" sem análise), origem e datas legíveis, fontes agrupadas por estado, avisos de parcial/antigo, copiar e "Na watchlist". Últimas 8 consultas da sessão como atalho. |
+| `/dashboard` | Watchlist em tabela (desktop) ou cards (celular), filtro por tipo, busca, "Consultar" e remoção com "Desfazer" por 6 s. |
+
+Layout: sidebar fixa a partir de 1024 px, recolhida só com ícones entre 768 e 1023 px, e gaveta com botão de menu abaixo de 768 px (fecha com Esc, clique fora ou ao navegar). Sem rolagem horizontal em 360, 390, 768 e 1280 px.
+
+Acessibilidade: navegação completa por teclado com foco visível, link "Pular para o conteúdo", ícones SVG ocultos de leitores de tela, abas e radios com papéis ARIA, foco movido para o resultado ou para o erro ao fim da consulta, toasts com `role="status"` e erros com `role="alert"`. Animações desligadas com `prefers-reduced-motion`.
+
+Sessão e dados: o token e as consultas recentes vivem só em memória (nada em `localStorage`/`sessionStorage`); recarregar a página exige novo login. A normalização de indicadores é só no frontend; a validação continua no backend. Email segue como "integração ainda indisponível".
 
 ### Configuração segura e chamadas externas
 
@@ -193,7 +213,7 @@ Cadastro/login reais ficam em `/login`; busca em `/lookup`; inclusão, listagem 
 
 O formulário envia `POST /api/auth/login` com JSON `{ "email": "<email da conta>", "password": "<senha da conta>" }`. Resposta 200: `{ "token": "<JWT>", "user": { "id": "<uuid>", "email": "<email>", "name": "<nome ou null>", "role": "analyst|viewer|admin" } }`. Corpo inválido retorna 400; credenciais incorretas/conta inexistente retornam 401 com a mesma mensagem; falhas operacionais retornam 500. Login e refresh enviam `Cache-Control: no-store`.
 
-Sucesso guarda a sessão em memória e redireciona para `/lookup`. Erros de credenciais, rede e resposta inválida são exibidos no formulário; a submissão fica desabilitada enquanto aguarda. Lookup e watchlist redirecionam ao login quando não há sessão. Tokens do armazenamento legado são removidos ao entrar/sair.
+Sucesso guarda a sessão em memória e redireciona para o destino `next` (somente caminho interno) ou para `/lookup`. Erros de credenciais, rede e resposta inválida são exibidos no formulário; a submissão fica desabilitada enquanto aguarda. Lookup e watchlist redirecionam ao login quando não há sessão. Tokens do armazenamento legado são removidos ao entrar/sair.
 
 O cliente HTTP injeta Bearer automaticamente em Lookup, Watchlist e refresh. Exemplo de header para um cliente externo: `Authorization: Bearer <JWT recebido no login>`; não coloque o token em query string. Em 401, a sessão correspondente é apagada e a interface exige novo login; falhas temporárias de rede/429/5xx não encerram a sessão. Um 401 atrasado de uma sessão antiga não apaga um novo login.
 
@@ -284,12 +304,12 @@ Documentação Markdown (README, SPECs, AGENTS e registros de sessão): 29 arqui
 
 ## 🎨 Design System
 
-O CSS segue um design system **dark-mode cybersecurity** completo:
-- **Palette**: Deep space backgrounds com acentos cyan/purple/red
-- **Glassmorphism**: Backdrop-filter blur + bordas translúcidas
-- **Animações**: Fade-in staggered, pulse glow, grid background
-- **Tipografia**: Inter (UI) + JetBrains Mono (dados/código)
-- **Responsivo**: Breakpoints para desktop, tablet e mobile
+O CSS (vanilla, `globals.css`) segue um design system **dark-mode cybersecurity**:
+- **Tokens**: espaçamento, raios, tipografia fluida (`clamp`), cores das quatro faixas de risco e dos quatro estados de fonte; texto com contraste WCAG AA
+- **Tipografia**: pilhas de fontes do sistema (`system-ui`… e `ui-monospace`…), sem download de fontes no build
+- **Componentes**: botão, campo, card, badge, alerta, skeleton, toast, estado vazio e abas em `components/ui/`; ícones SVG inline
+- **Animações**: discretas e desligadas com `prefers-reduced-motion: reduce`
+- **Responsivo**: breakpoints em 768 px e 1024 px
 
 ## 📜 Licença
 
