@@ -727,12 +727,35 @@ main:focus { outline: none; }
 }
 .auth-card::before { content: ''; position: absolute; inset: 0 0 auto; height: 3px; border-radius: var(--radius-lg) var(--radius-lg) 0 0; background: var(--gradient-brand); }
 .auth-card > * + * { margin-top: var(--space-4); }
-.auth-logo { text-align: center; margin-bottom: var(--space-5); }
-.auth-logo h2 { font-size: var(--text-xl); font-weight: 800; background: var(--gradient-brand); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-.auth-logo p { margin-top: var(--space-1); color: var(--text-muted); font-size: var(--text-sm); }
+.auth-logo { display: grid; justify-items: center; gap: var(--space-2); text-align: center; }
+.auth-brand { margin-bottom: var(--space-2); }
+.auth-logo h1 { font-size: var(--text-xl); font-weight: 800; }
+.auth-logo p { color: var(--text-muted); font-size: var(--text-sm); }
+.auth-tabs { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
 .auth-form { display: flex; flex-direction: column; gap: var(--space-4); }
-.auth-form .btn, .auth-card > .btn { width: 100%; }
-.auth-form [role='alert'] { padding: var(--space-3) var(--space-4); border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent); border-left-width: 4px; border-radius: var(--radius-md); background: color-mix(in srgb, var(--danger) 10%, var(--surface)); color: var(--text); font-size: var(--text-sm); }
+.auth-footer { text-align: center; font-size: var(--text-sm); }
+.auth-footer a { color: var(--text-muted); }
+.auth-footer a:hover { color: var(--text); }
+
+/* Input with a trailing button (show/hide password, F3.2) */
+.input-adorned { position: relative; }
+.input-adorned .input { padding-right: 48px; }
+.input-adornment {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 36px;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+}
+.input-adornment:hover { color: var(--text); background: var(--surface-2); }
+.input-adornment[aria-pressed='true'] { color: var(--accent); }
 
 /* ═══════════════════════════════════════════
    Consulta (/lookup)
