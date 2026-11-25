@@ -29,7 +29,7 @@ Mantido conforme a [SPEC-FDE 005](SPEC-FDE/2026-11-19-governanca-specs.md). Ao m
 | SPEC-FDE 004 | [SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md](SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md) | implementada | #8 | PRs #9 (SPEC), #10 e #11 | Conferência registrada do Definition of Done (E4, cenários "PR real") pendente |
 | SPEC-FDE 005 | [SPEC-FDE/2026-11-19-governanca-specs.md](SPEC-FDE/2026-11-19-governanca-specs.md) | implementada | — | PRs #15 e #16 (E5) | Só governança; nenhum requisito muda |
 | SPEC-FDE 006 | [SPEC-FDE/2026-11-24-experiencia-frontend.md](SPEC-FDE/2026-11-24-experiencia-frontend.md) | implementada | #35 (#36–#42) | PR #43 (SPEC); F1: PR #44; F2: PR #45; F3: PR #46; F4: PR #47; F5: PR #48; F6: PR #49 | Pendente: validação manual (seção 8, "Manual"). Substitui o stub `2026-09-30-frontend-architecture.md`. Não altera os textos de login da 002/003 |
-| SPEC-FDE 007 | [SPEC-FDE/2026-11-24-limite-tentativas-login.md](SPEC-FDE/2026-11-24-limite-tentativas-login.md) | implementada | #19 | PRs #54/#55 (SPEC); código: `5ae1aed` | D1–D3 aprovadas com a recomendação. Pendente: validação manual. Pré-requisito do deploy (#20). Não altera a tela: o texto do 429 é da 002 |
+| SPEC-FDE 007 | [SPEC-FDE/2026-11-24-limite-tentativas-login.md](SPEC-FDE/2026-11-24-limite-tentativas-login.md) | implementada | #19 | PRs #54/#55 (SPEC); código: PR #59 | D1–D3 aprovadas com a recomendação. Pendente: validação manual. Pré-requisito do deploy (#20). Não altera a tela: o texto do 429 é da 002 |
 
 "upstream" é o repositório de origem `hug0mgs/dsai-ap1-kapitrace`. Os demais números são issues/PRs deste repositório.
 
