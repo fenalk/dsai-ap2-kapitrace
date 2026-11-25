@@ -28,6 +28,9 @@ export function validateConfig(): void {
   setting('EXTERNAL_API_MAX_RETRIES', 1, 0, 1);
   setting('EXTERNAL_API_MAX_CONCURRENCY', 8, 1, 64);
   setting('LOOKUP_REQUESTS_PER_MINUTE', 30, 1, 10000);
+  setting('LOGIN_MAX_FAILURES_PER_ACCOUNT', 5, 1, 1000);
+  setting('LOGIN_MAX_FAILURES_PER_IP', 20, 1, 100000);
+  setting('LOGIN_WINDOW_SECONDS', 900, 1, 86400);
   for (const name of ['LOOKUP_CACHE_TTL_SECONDS', 'LOOKUP_PARTIAL_CACHE_TTL_SECONDS', 'LOOKUP_STALE_MAX_AGE_SECONDS']) setting(name, 86400, 1, 604800);
   for (const name of ['ABUSEIPDB', 'VIRUSTOTAL', 'SHODAN', 'GREYNOISE', 'OTX', 'URLSCAN', 'IPINFO']) setting(`${name}_MIN_INTERVAL_MS`, 1000, 0, 86400000);
 }
