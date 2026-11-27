@@ -2,7 +2,7 @@
 
 - **Prioridade:** P2 — Média
 - **Data:** 2026-11-18
-- **Status:** proposta (aguardando aprovação; issue #4)
+- **Status:** aprovada (2026-11-27, pela responsável pelo repositório, com as recomendações de D1–D4; issue #4)
 - **Agente:** Claude Code (Claude Opus 5.5)
 - **Origem:** diagnóstico FDE (issue #1, seção "Ajustes na aplicação": melhorar o preenchimento na tela de cadastro)
 - **SPECs relacionadas:** `SPEC/2026-10-06-auth-and-middleware-reactivation.md`, `SPEC/SPEC-FDE/2026-11-18-melhoria-mensagem-erro-login.md` (mesmo componente e mesmo padrão de erro)
@@ -36,8 +36,9 @@ Respostas do backend: 400 `Valid email address is required`, 400 `Password must 
 - O usuário sabe, antes de digitar, o que é obrigatório e qual é a regra da senha.
 - Erros aparecem em português, junto ao campo, assim que o campo perde o foco ou no envio. O botão não envia dados sabidamente inválidos.
 - Uma falha no login automático não leva o usuário a tentar criar a conta de novo.
-- O formulário não permite criar contas que o login rejeitaria.
-- As regras de negócio do backend não mudam. As propostas que mexeriam nelas ficam como decisões pendentes.
+- O formulário não permite criar contas que o login rejeitaria, e o backend também não (D1).
+- O Nome tem limite oficial de 100 caracteres na tela e no backend (D2).
+- No backend, só mudam os limites de tamanho de E7. As demais regras de `register`/`login` continuam iguais.
 
 ## 3. Escopo
 
@@ -50,7 +51,7 @@ Respostas do backend: 400 `Valid email address is required`, 400 `Password must 
 **E2 — Validação no cliente, espelhando o backend sem alterá-lo:**
 - Email: obrigatório; mesmo formato da regex do backend; `maxLength={254}`.
 - Senha: obrigatória; ≥8 caracteres; `maxLength={1024}`.
-- Nome: aparar espaços antes do envio; `maxLength={100}` só no campo (proposta de interface; ver D2).
+- Nome: aparar espaços antes do envio; `maxLength={100}`, o mesmo limite do backend (E7, D2).
 - Validar ao sair do campo (`blur`) e no envio, com `noValidate` no formulário e mensagens próprias:
   - "Informe seu email." / "Informe um email válido, por exemplo nome@empresa.com.";
   - "Informe uma senha." / "A senha precisa ter pelo menos 8 caracteres.".
@@ -76,18 +77,28 @@ A distinção entre os três 400 usa o texto atual do backend **apenas como chav
 
 **E5 — Falha parcial (cadastro ok, login automático falhou):** mostrar "Conta criada. Não foi possível entrar automaticamente; entre com seu email e senha.", mudar para o modo "Entrar" com o email preenchido e a senha limpa. Não reenviar `register`.
 
-**E6 — Testes:** e2e para formulário vazio sem requisição, senha curta sem requisição, indicador de regra, mostrar/ocultar senha, conta existente e falha parcial. O fluxo e2e atual (`Criar conta` → `#name`/`#email`/`#password` → `Criar conta e entrar`) continua passando sem mudança de seletores.
+**E6 — Testes:** e2e para formulário vazio sem requisição, senha curta sem requisição, indicador de regra, mostrar/ocultar senha, conta existente e falha parcial. O fluxo e2e atual (`Criar conta` → `#name`/`#email`/`#password` → `Criar conta e entrar`) continua passando sem mudança de seletores. Testes de integração para os limites de E7.
 
-### Decisões pendentes (não implementar sem aprovação)
+**E7 — Limites de tamanho no backend (`register`, D1 e D2):**
+- Email com mais de 254 caracteres após `trim()`: 400 `Valid email address is required`, a mesma resposta do email inválido (o mapeamento de E4 não muda).
+- Senha com mais de 1024 caracteres: 400 `Password must be at most 1024 characters long`. Na tela, cai na mensagem genérica de 400 de E4, já que o `maxLength` de E2 impede o caso.
+- Nome com mais de 100 caracteres após `trim()`: 400 `Name must be at most 100 characters long`. Nome ausente ou só com espaços continua sendo gravado como `null`.
+- As validações rodam **antes** da consulta ao banco e do `bcrypt.hash`, e nenhuma conta é criada.
+- Limites iguais aos do login (`email.trim().length > 254`, `password.length > 1024`), sem migration: a coluna `name` continua `String?`.
 
-- **D1 — Alinhar os limites do backend:** fazer `register` rejeitar email >254 e senha >1024 com 400, como o login já faz. Hoje o frontend (E2) evita o problema, mas um cliente direto da API ainda pode criar contas impossíveis de usar. Recomendado, mas é mudança de regra no backend. Exige atualizar `auth.controller.ts`, `tests/integration/auth.test.ts` e a SPEC de auth.
-- **D2 — Limite do Nome:** definir um máximo oficial (sugestão: 100) também no backend.
-- **D3 — Enumeração no cadastro:** `User already exists` revela que o email está cadastrado. Remover isso exige outro fluxo (ex.: confirmação por email), que não existe no projeto. A mensagem de E4 é a menos explícita possível sem mudar o contrato.
-- **D4 — Força da senha:** exigir mais que 8 caracteres (classes de caracteres, lista de senhas vazadas) é mudança de regra de negócio e fica fora desta SPEC.
+### Decisões
+
+Aprovadas em 2026-11-27 conforme a recomendação entre parênteses.
+
+- **D1 — Alinhar os limites do backend:** `register` rejeita email >254 e senha >1024 com 400, como o login já faz (recomendado; ver E7). Sem isso, um cliente que chama a API direto, sem passar pela tela, ainda cria contas que nunca conseguem entrar.
+- **D2 — Limite do Nome:** máximo oficial de 100 caracteres, no campo e no backend (recomendado; ver E2 e E7). Cobre nomes compostos longos e impede gravar textos arbitrariamente grandes.
+- **D3 — Enumeração no cadastro:** risco aceito por enquanto (recomendado). O backend continua respondendo `User already exists`, o que revela que o email tem conta. Remover isso exige confirmação por email, que o projeto não tem. A tela usa a mensagem neutra de E4, mas ela não esconde a informação de quem chama a API. Revisar se o projeto passar a enviar email.
+- **D4 — Força da senha:** fora desta SPEC (recomendado). A 003 mantém a regra atual de 8 caracteres. A escolha entre manter só o tamanho mínimo (revogando a SPEC-2026-10-01 §4.1), exigir classes de caracteres (§4.1) ou recusar senhas conhecidas/vazadas fica para uma SPEC própria. Até lá, a divergência de §4.1 continua registrada em `SPEC/README.md`.
 
 ## 4. Fora do escopo
 
-- Alterar regras e respostas do backend (`register`/`login`) ou o schema `User` (ver decisões D1–D4).
+- Alterar regras e respostas do backend (`register`/`login`) além dos limites de E7, ou o schema `User`.
+- Força da senha (D4) e remoção da enumeração no cadastro (D3).
 - Separar o cadastro numa rota própria (`/register`).
 - Campo "confirmar senha", captcha, verificação de email, termos de uso, escolha de perfil/role.
 - **Máscaras de entrada:** nenhum campo atual (nome, email, senha) tem formato fixo que justifique máscara. Não adicionar.
@@ -106,20 +117,21 @@ A distinção entre os três 400 usa o texto atual do backend **apenas como chav
 - **CA8 — Limites:** Dado o campo email ou senha, quando tento digitar além de 254 ou 1024 caracteres, então o campo não aceita mais caracteres.
 - **CA9 — Erro some ao corrigir:** Dado um erro no campo Email, quando corrijo o valor e saio do campo, então a mensagem desaparece e `aria-invalid` deixa de ser `true`.
 - **CA10 — Regressão:** o cadastro válido cria a conta com `role: 'analyst'` e redireciona para `/lookup`, o fluxo e2e atual passa sem trocar seletores, e todas as suítes e builds de AGENTS.md §6 passam.
+- **CA11 — Limites no backend:** Dado um `POST /api/auth/register` direto na API com email de 255 caracteres, senha de 1025 caracteres ou nome de 101 caracteres, quando envio, então recebo 400 com a mensagem de E7 e nenhuma conta é criada. Com email de 254, senha de 1024 e nome de 100 caracteres, o cadastro responde 201.
 
 ## 6. Dependências
 
 - SPEC-FDE 002: classes visuais de erro e padrão `aria-*`, no mesmo componente. Recomenda-se implementar a 002 antes ou junto.
 - SPEC-FDE 001, E2: `lib/api.ts` expondo `status` do erro.
-- Componentes: `src/frontend/src/app/login/page.tsx`, `src/frontend/src/lib/api.ts`, `src/frontend/src/app/globals.css`, `tests/e2e/browser.test.ts`. Referência de regras: `src/backend/src/modules/auth/auth.controller.ts`.
+- Componentes: `src/frontend/src/app/login/page.tsx`, `src/frontend/src/lib/api.ts`, `src/frontend/src/app/globals.css`, `tests/e2e/browser.test.ts`, `src/backend/src/modules/auth/auth.controller.ts` (E7), `tests/integration/auth.test.ts` (CA11).
+- Atualizar a SPEC-2026-10-06-auth com os limites do cadastro (E7), já que ela descreve os limites do login.
 - Leitura prévia de `src/frontend/AGENTS.md` (Next.js 16).
-- Aprovação das decisões D1–D4 antes de qualquer mudança no backend.
 
 ## 7. Como validar
 
 1. `npm --prefix src/frontend run lint && npm --prefix src/frontend run build`
 2. `npm run test:e2e`: CA2, CA3, CA5, CA6, CA7 e CA10 automatizados. Para CA7, bloquear apenas `/api/auth/login` via `Network.setBlockedURLs`, como o teste atual já faz.
-3. `npm run test:unit && npm run test:integration`: devem passar sem mudança no backend.
+3. `npm run test:unit && npm run test:integration`: devem passar, com os novos casos de CA11. `npm --prefix src/backend run build`.
 4. Manual, com `npm run dev` no backend e no frontend, em `/login` → "Criar conta":
    - conferir rótulos e ajuda (CA1);
    - enviar vazio (CA2);
