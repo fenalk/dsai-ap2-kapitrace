@@ -14,10 +14,15 @@ const BCRYPT_COST = 10;
 // Built from random bytes; no password in code can ever match it.
 const dummyHash = bcrypt.hash(randomBytes(32).toString('hex'), BCRYPT_COST);
 
+// Same limits as the login (below): an account the login would reject can never be created (SPEC-FDE 003, E7).
+const EMAIL_MAX = 254;
+const PASSWORD_MAX = 1024;
+const NAME_MAX = 100;
+
 /**
  * Validate password security standards:
  * - Minimum 8 characters
- * - Must not be all whitespace
+ * - Maximum 1024 characters (login limit)
  */
 function validatePasswordStrength(password: string): { valid: boolean; reason?: string } {
   if (!password || typeof password !== 'string') {
@@ -25,6 +30,9 @@ function validatePasswordStrength(password: string): { valid: boolean; reason?: 
   }
   if (password.length < 8) {
     return { valid: false, reason: 'Password must be at least 8 characters long' };
+  }
+  if (password.length > PASSWORD_MAX) {
+    return { valid: false, reason: `Password must be at most ${PASSWORD_MAX} characters long` };
   }
   return { valid: true };
 }
@@ -41,7 +49,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password, name } = req.body;
 
-    if (!email || !isValidEmail(email)) {
+    if (!email || !isValidEmail(email) || email.trim().length > EMAIL_MAX) {
       res.status(400).json({ error: 'Valid email address is required' });
       return;
     }
@@ -49,6 +57,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const passwordCheck = validatePasswordStrength(password);
     if (!passwordCheck.valid) {
       res.status(400).json({ error: passwordCheck.reason });
+      return;
+    }
+
+    // Absent or blank names are stored as null.
+    const trimmedName = name ? String(name).trim() : '';
+    if (trimmedName.length > NAME_MAX) {
+      res.status(400).json({ error: `Name must be at most ${NAME_MAX} characters long` });
       return;
     }
 
@@ -65,7 +80,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       data: {
         email: normalizedEmail,
         password: hashedPassword,
-        name: name ? String(name).trim() : null,
+        name: trimmedName || null,
         role: 'analyst'
       }
     });
@@ -86,8 +101,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res.setHeader('Pragma', 'no-cache');
     const { email, password } = req.body ?? {};
 
-    if (typeof email !== 'string' || !isValidEmail(email) || email.trim().length > 254 ||
-        typeof password !== 'string' || !password || password.length > 1024) {
+    if (typeof email !== 'string' || !isValidEmail(email) || email.trim().length > EMAIL_MAX ||
+        typeof password !== 'string' || !password || password.length > PASSWORD_MAX) {
       res.status(400).json({ error: 'Email and password are required' });
       return;
     }
