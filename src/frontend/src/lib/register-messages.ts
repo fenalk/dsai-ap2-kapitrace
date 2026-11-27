@@ -60,7 +60,10 @@ export function passwordRuleMet(length: number): boolean {
 // The backend texts are used only as mapping keys (E4). If one changes, the generic 400 text is shown.
 const serverFieldErrors: Record<string, { field: RegisterField; text: string }> = {
   'Valid email address is required': { field: 'email', text: registerMessages.serverEmailInvalid },
-  'Password must be at least 8 characters long': { field: 'password', text: registerMessages.passwordTooShort }
+  'Password must be at least 8 characters long': { field: 'password', text: registerMessages.passwordTooShort },
+  // E7: the field maxLength prevents these on screen; a direct or altered client still gets the field text.
+  [`Password must be at most ${PASSWORD_MAX} characters long`]: { field: 'password', text: registerMessages.passwordTooLong },
+  [`Name must be at most ${NAME_MAX} characters long`]: { field: 'name', text: registerMessages.nameTooLong }
 };
 
 /** E4: field or general text for a failed sign-up, never the server's own message. */

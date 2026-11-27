@@ -36,8 +36,11 @@ describe('SPEC-FDE 003 sign-up rules', () => {
     assert.deepEqual(registerFailure(http(400, 'Valid email address is required')), { field: 'email', text: 'Informe um email válido.' });
     assert.deepEqual(registerFailure(http(400, 'Password must be at least 8 characters long')), { field: 'password', text: 'A senha precisa ter pelo menos 8 caracteres.' });
     assert.deepEqual(registerFailure(http(400, 'User already exists')), { text: registerMessages.accountExists });
+    // E7 limits point to their own field.
+    assert.deepEqual(registerFailure(http(400, 'Password must be at most 1024 characters long')), { field: 'password', text: 'A senha pode ter no máximo 1024 caracteres.' });
+    assert.deepEqual(registerFailure(http(400, 'Name must be at most 100 characters long')), { field: 'name', text: 'O nome pode ter no máximo 100 caracteres.' });
     // A changed or new backend text falls back to the generic 400.
-    for (const error of ['Password must be at most 1024 characters long', 'Name must be at most 100 characters long', 'Email is invalid']) {
+    for (const error of ['Password must be at most 2048 characters long', 'Name is too long', 'Email is invalid']) {
       assert.deepEqual(registerFailure(http(400, error)), { text: 'Verifique os dados informados.' }, error);
     }
     assert.deepEqual(registerFailure(new NetworkError()), { text: 'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.' });

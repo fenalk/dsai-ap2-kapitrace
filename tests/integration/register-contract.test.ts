@@ -4,7 +4,8 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { startTestServer, type TestServer } from '../test-helper';
-import { validateRegister } from '../../src/frontend/src/lib/register-messages';
+import { ApiError } from '../../src/frontend/src/lib/api';
+import { registerFailure, validateRegister } from '../../src/frontend/src/lib/register-messages';
 
 let sequence = 0;
 const emailOf = (length: number) => {
@@ -37,6 +38,14 @@ describe('Sign-up rules contract: client validation matches the backend (SPEC-FD
       assert.ok([201, 400].includes(res.status), `unexpected status ${res.status}`);
       const clientAccepts = Object.keys(validateRegister({ name, email, password: secret })).length === 0;
       assert.equal(clientAccepts, res.status === 201, `client ${clientAccepts ? 'accepts' : 'rejects'}, server answered ${res.status}`);
+      if (res.status === 400) {
+        // The real server answer is shown next to the same field the client rule flags (E4).
+        const body = await res.json();
+        const failure = registerFailure(new ApiError(body.error, 400, body, null));
+        const flagged = Object.keys(validateRegister({ name, email, password: secret }));
+        assert.ok(failure.field, `server text not mapped to a field: ${body.error}`);
+        assert.deepEqual([failure.field], flagged);
+      }
     });
   }
 });

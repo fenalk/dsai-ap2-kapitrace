@@ -69,11 +69,13 @@ Respostas do backend: 400 `Valid email address is required`, 400 `Password must 
 | --- | --- |
 | 400 email inválido | junto ao Email: "Informe um email válido." |
 | 400 senha curta | junto à Senha: "A senha precisa ter pelo menos 8 caracteres." |
+| 400 senha longa (E7) | junto à Senha: "A senha pode ter no máximo 1024 caracteres." |
+| 400 nome longo (E7) | junto ao Nome: "O nome pode ter no máximo 100 caracteres." |
 | 400 conta existente | geral: "Não foi possível criar a conta com este email. Se você já tem cadastro, use a aba 'Entrar' para acessar." |
 | 5xx / resposta inválida | geral: "Não foi possível criar a conta agora. Tente novamente em alguns instantes." |
 | Falha de rede | geral: mensagem de conexão existente |
 
-A distinção entre os três 400 usa o texto atual do backend **apenas como chave de mapeamento**, isolada numa função. Se o texto do backend mudar, a função cai na mensagem genérica de 400 ("Verifique os dados informados.").
+A distinção entre os 400 usa o texto atual do backend **apenas como chave de mapeamento**, isolada numa função. Se o texto do backend mudar, a função cai na mensagem genérica de 400 ("Verifique os dados informados.").
 
 **E5 — Falha parcial (cadastro ok, login automático falhou):** mostrar "Conta criada. Não foi possível entrar automaticamente; entre com seu email e senha.", mudar para o modo "Entrar" com o email preenchido e a senha limpa. Não reenviar `register`.
 
@@ -81,8 +83,8 @@ A distinção entre os três 400 usa o texto atual do backend **apenas como chav
 
 **E7 — Limites de tamanho no backend (`register`, D1 e D2):**
 - Email com mais de 254 caracteres após `trim()`: 400 `Valid email address is required`, a mesma resposta do email inválido (o mapeamento de E4 não muda).
-- Senha com mais de 1024 caracteres: 400 `Password must be at most 1024 characters long`. Na tela, cai na mensagem genérica de 400 de E4, já que o `maxLength` de E2 impede o caso.
-- Nome com mais de 100 caracteres após `trim()`: 400 `Name must be at most 100 characters long`. Nome ausente ou só com espaços continua sendo gravado como `null`.
+- Senha com mais de 1024 caracteres: 400 `Password must be at most 1024 characters long`. Na tela, o `maxLength` de E2 impede o caso; se a resposta chegar (cliente direto ou alterado), aparece junto à Senha (E4).
+- Nome com mais de 100 caracteres após `trim()`: 400 `Name must be at most 100 characters long`, mostrada junto ao Nome (E4). Nome ausente ou só com espaços continua sendo gravado como `null`.
 - As validações rodam **antes** da consulta ao banco e do `bcrypt.hash`, e nenhuma conta é criada.
 - Limites iguais aos do login (`email.trim().length > 254`, `password.length > 1024`), sem migration: a coluna `name` continua `String?`.
 
