@@ -23,7 +23,7 @@ Mantido conforme a [SPEC-FDE 005](SPEC-FDE/2026-11-19-governanca-specs.md). Ao m
 | SPEC-2026-10-06-real-api | [2026-10-06-real-api-integration.md](2026-10-06-real-api-integration.md) | implementada | upstream #3 | `8f7c94c`, `da1a7d7`, `798e1d1` | Complementa a 10-01. Trecho sobre SQLite substituído pela SPEC de Supabase. Regra de `partial` (§7) alterada pela D1 da SPEC-FDE 001 |
 | SPEC-2026-10-06-auth | [2026-10-06-auth-and-middleware-reactivation.md](2026-10-06-auth-and-middleware-reactivation.md) | implementada | upstream #4 | `45b94f0`, `c8caef2` | Substitui a 10-01 no acesso ao lookup (passa a exigir JWT) |
 | SPEC-2026-10-06-supabase | [2026-10-06-supabase-postgresql-migration.md](2026-10-06-supabase-postgresql-migration.md) | implementada | upstream #2 | `5617970`, `f7b6901`, `ab8e372` (upstream PR #8) | Substitui SQLite em todas as SPECs anteriores |
-| SPEC-FDE 001 | [SPEC-FDE/2026-11-18-consulta-indicadores-seguranca.md](SPEC-FDE/2026-11-18-consulta-indicadores-seguranca.md) | implementada | #2 | PR #13; D1 (opção B): issue #17 | D1 resolvida (opção B). Pendente: validação manual com chaves reais |
+| SPEC-FDE 001 | [SPEC-FDE/2026-11-18-consulta-indicadores-seguranca.md](SPEC-FDE/2026-11-18-consulta-indicadores-seguranca.md) | validada | #2 | PR #13; D1 (opção B): issue #17; validação manual: issue #18 | D1 resolvida (opção B). Validada com chaves reais em 2026-11-27 |
 | SPEC-FDE 002 | [SPEC-FDE/2026-11-18-melhoria-mensagem-erro-login.md](SPEC-FDE/2026-11-18-melhoria-mensagem-erro-login.md) | implementada | #3 | PR #57 | Pendente: CA8 manual (contraste e 360 px) |
 | SPEC-FDE 003 | [SPEC-FDE/2026-11-18-melhoria-preenchimento-cadastro.md](SPEC-FDE/2026-11-18-melhoria-preenchimento-cadastro.md) | proposta | #4 | — | Depende da 002. Decisões D1–D4 pendentes |
 | SPEC-FDE 004 | [SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md](SPEC-FDE/2026-11-18-ci-code-review-ia-merge.md) | implementada | #8 | PRs #9 (SPEC), #10 e #11 | Conferência registrada do Definition of Done (E4, cenários "PR real") pendente |
@@ -51,7 +51,7 @@ Legenda: ✅ concluída · 🔶 em andamento ou com pendência · ⏳ SPEC exist
 | Ordem | Item | Estado | Depende de | Observação |
 | --- | --- | --- | --- | --- |
 | 1.1 | #17 **D1 da SPEC-FDE 001**: fonte `not_configured` conta como parcial? | ✅ | — | Decidida a opção B em 2026-11-24: `not_configured` não torna o resultado parcial, e o cache volta a durar 24 h com os dois provedores. |
-| 1.2 | #18 **SPEC-FDE 001**: validação manual com chaves reais | 🔶 | 1.1 | Código mesclado (PR #13). Falta executar "Como validar", parte manual, e passar o status para `validada`. |
+| 1.2 | #18 **SPEC-FDE 001**: validação manual com chaves reais | ✅ | 1.1 | Validada em 2026-11-27 com chaves reais: CA1–CA11 e CA13 OK, cotas adequadas. |
 | 1.3 | #20 **Deploy** (backend, frontend, Supabase, variáveis, CORS, verificação após subir) | ✏️ | 1.2 | Substitui o stub `2026-09-30-deployment-strategy.md`. Antes de escrever, definir onde hospedar. |
 | 1.4 | #19 **SPEC-FDE 007**: limite de tentativas no login e tempo de resposta | 🔶 | — | Código pronto; falta a validação manual da SPEC. Pendência de segurança da 002. Obrigatório antes de um deploy público (1.3). Inclui a enumeração por tempo de resposta e o log sanitizado. |
 
