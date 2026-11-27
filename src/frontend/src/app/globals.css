@@ -734,6 +734,12 @@ main:focus { outline: none; }
 .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
 .auth-form { display: flex; flex-direction: column; gap: var(--space-4); }
 .auth-footer { text-align: center; font-size: var(--text-sm); }
+/* SPEC-FDE 003: sign-up identification (E1) and password rule (E3). */
+.auth-required-legend { margin-bottom: calc(-1 * var(--space-2)); }
+.field-required { color: var(--danger); }
+.password-rule { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-xs); color: var(--text-muted); }
+.password-rule .icon { flex: none; width: 1rem; height: 1rem; }
+.password-rule.is-met { color: var(--success); }
 .auth-footer a { color: var(--text-muted); }
 .auth-footer a:hover { color: var(--text); }
 

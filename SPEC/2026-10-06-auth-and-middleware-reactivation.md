@@ -22,6 +22,8 @@ Request: `{ "email": "<email da conta>", "password": "<senha da conta>" }`.
 - 400: corpo inválido, campos ausentes, não-string ou formato de email inválido; `{ "error": "<mensagem segura>" }`.
 - 401: usuário inexistente ou senha incorreta; mesma mensagem `Invalid credentials`, sem distinguir as duas condições.
 - 500: falha operacional; mensagem genérica sem dados internos/credenciais.
+
+> **Anotação (SPEC-FDE 003, E7, 2026-11-27):** `POST /api/auth/register` aplica os mesmos limites do login, para não criar conta que o login rejeitaria: email com mais de 254 caracteres responde 400 `Valid email address is required`; senha com mais de 1024, 400 `Password must be at most 1024 characters long`; nome com mais de 100 caracteres após `trim()`, 400 `Name must be at most 100 characters long`. Nome ausente ou em branco é gravado como `null`.
 - Login/refresh enviam Cache-Control: no-store e Pragma: no-cache.
 - JWT assinado somente com segredo de ambiente `JWT_SECRET`, HS256, validade de 24 horas, issuer `kapitrace`, audience `kapitrace-web`. Payload com id/email/role e iat/exp. Refresh preserva política de emissão; não muda modelo de refresh para cookie nem amplia RBAC.
 

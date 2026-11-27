@@ -77,6 +77,54 @@ describe('Integration Tests: Authentication Module (/api/auth)', () => {
     assert.strictEqual(weakPassRes.status, 400);
   });
 
+  it('should reject sign-up fields over the login limits without creating the account (SPEC-FDE 003, E7, CA11)', async () => {
+    const register = (body: Record<string, unknown>) => server.fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const domain = '@limits.test';
+    const longEmail = `${'a'.repeat(255 - domain.length)}${domain}`;
+    let res = await register({ email: longEmail, password: testPassword });
+    assert.strictEqual(res.status, 400);
+    assert.deepStrictEqual(await res.json(), { error: 'Valid email address is required' });
+
+    const passwordEmail = `limit_password_${Date.now()}@kapitrace.sec`;
+    res = await register({ email: passwordEmail, password: 'p'.repeat(1025) });
+    assert.strictEqual(res.status, 400);
+    assert.deepStrictEqual(await res.json(), { error: 'Password must be at most 1024 characters long' });
+
+    const nameEmail = `limit_name_${Date.now()}@kapitrace.sec`;
+    res = await register({ email: nameEmail, password: testPassword, name: ` ${'n'.repeat(101)} ` });
+    assert.strictEqual(res.status, 400);
+    assert.deepStrictEqual(await res.json(), { error: 'Name must be at most 100 characters long' });
+
+    // Nothing was created: the same emails can still sign up, exactly at the limits.
+    assert.strictEqual((await register({ email: passwordEmail, password: 'p'.repeat(1024) })).status, 201);
+    assert.strictEqual((await register({ email: nameEmail, password: testPassword, name: 'n'.repeat(100) })).status, 201);
+    assert.strictEqual((await register({ email: `${'a'.repeat(254 - domain.length)}${domain}`, password: testPassword })).status, 201);
+  });
+
+  it('should reject non-string sign-up email and password with 400 and no account', async () => {
+    const register = (body: Record<string, unknown>) => server.fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    for (const email of [12345, true, {}, [], ['typed@kapitrace.sec'], null]) {
+      const res = await register({ email, password: testPassword });
+      assert.strictEqual(res.status, 400, JSON.stringify(email));
+      assert.deepStrictEqual(await res.json(), { error: 'Valid email address is required' });
+    }
+    const email = `typed_password_${Date.now()}@kapitrace.sec`;
+    for (const password of [12345678, {}, ['p'.repeat(8)], null]) {
+      const res = await register({ email, password });
+      assert.strictEqual(res.status, 400, JSON.stringify(password));
+    }
+    assert.strictEqual((await register({ email, password: testPassword })).status, 201);
+  });
+
+  it('should store a blank sign-up name as null (SPEC-FDE 003, E7)', async () => {
+    const email = `blank_name_${Date.now()}@kapitrace.sec`;
+    const created = await server.fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: testPassword, name: '   ' }) });
+    assert.strictEqual(created.status, 201);
+    const res = await server.fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: testPassword }) });
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual((await res.json()).user.name, null);
+  });
+
   it('should authenticate user and return JWT session token on valid login', async () => {
     const res = await server.fetch('/api/auth/login', {
       method: 'POST',
