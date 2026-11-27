@@ -64,6 +64,8 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401, r
     const lookupRequests: { hasBearer: boolean; path: string }[] = [];
     // SPEC-FDE 002: login requests are counted to prove invalid fields never reach the server.
     let loginRequests = 0;
+    // SPEC-FDE 003: same for sign-up (CA2, CA3) and to prove a partial failure never sends it again (CA7).
+    let registerRequests = 0;
     let onPaused: ((params: Record<string, any>) => void) | undefined;
     let id = 0;
     let sessionId: string | undefined;
@@ -75,6 +77,7 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401, r
         lookupRequests.push({ hasBearer: typeof header === 'string' && header.startsWith('Bearer '), path: new URL(message.params.request.url).pathname });
       }
       if (message.method === 'Network.requestWillBeSent' && message.params.request.method === 'POST' && message.params.request.url === `${backend.url}/api/auth/login`) loginRequests++;
+      if (message.method === 'Network.requestWillBeSent' && message.params.request.method === 'POST' && message.params.request.url === `${backend.url}/api/auth/register`) registerRequests++;
       if (message.method === 'Fetch.requestPaused') onPaused?.(message.params);
       const operation = pending.get(message.id);
       if (operation) { pending.delete(message.id); clearTimeout(operation.timer); if (message.error) operation.reject(new Error(message.error.message)); else operation.resolve(message.result); }
@@ -119,6 +122,9 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401, r
     };
     const waitForLookup = () => until(async () => await evaluate(`location.pathname === '/lookup' && Boolean(document.querySelector('[aria-label="Indicador"]'))`));
     const text = (selector: string): Promise<string> => evaluate(`document.querySelector(${JSON.stringify(selector)})?.textContent ?? ''`);
+    // React's onBlur listens to focusout; dispatching it does not depend on the window having focus.
+    const leave = (selector: string) => evaluate(`document.querySelector(${JSON.stringify(selector)}).dispatchEvent(new FocusEvent('focusout', { bubbles: true }))`);
+    const submitForm = async () => evaluate(`document.querySelector('form.auth-form button[type="submit"]').click()`);
     const email = `browser-${Date.now()}@example.com`;
     await navigate('/login');
     // F3.1/F3.2: login and sign-up are tabs; the password can be shown and hidden again.
@@ -130,8 +136,39 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401, r
     await until(async () => await evaluate(`document.querySelector('#password').type === 'text' && document.querySelector('.input-adornment').getAttribute('aria-pressed') === 'true'`));
     await evaluate(`document.querySelector('.input-adornment').click()`);
     await until(async () => await evaluate(`document.querySelector('#password').type === 'password'`));
+    // SPEC-FDE 003 CA1: optional and required fields are identified, with the password rule up front.
+    assert.deepEqual(await evaluate(`['name', 'email', 'password'].map(id => document.querySelector('label[for="' + id + '"]').textContent)`), ['Nome (opcional)', 'Email *', 'Senha *']);
+    assert.equal(await text('[data-testid="required-legend"]'), '* obrigatório');
+    assert.equal(await text('#password-rule'), 'Mínimo de 8 caracteres.');
+    assert.equal(await evaluate(`document.querySelector('#password').getAttribute('aria-describedby')`), 'password-rule');
+    assert.equal(await evaluate(`document.querySelector('.input-adornment').getAttribute('aria-controls')`), 'password');
+    // CA8: the fields stop at the backend limits.
+    assert.deepEqual(await evaluate(`['name', 'email', 'password'].map(id => document.querySelector('#' + id).maxLength)`), [100, 254, 1024]);
+    // CA2: empty form, errors next to the fields, focus on the email and no request.
+    const registersBefore = registerRequests;
+    await submitForm();
+    await until(async () => await text('#email-error') === 'Informe seu email.' && await text('#password-error') === 'Informe uma senha.');
+    assert.equal(await evaluate(`document.activeElement?.id`), 'email');
+    assert.equal(await evaluate(`document.querySelector('#password').getAttribute('aria-describedby')`), 'password-rule password-error');
+    // CA9: a corrected field loses its error when it is left.
+    await fill('#email', 'nome@'); await leave('#email');
+    await until(async () => (await text('#email-error')).startsWith('Informe um email válido'));
+    await fill('#email', email); await leave('#email');
+    await until(async () => await evaluate(`document.querySelector('#email-error') === null && document.querySelector('#email').getAttribute('aria-invalid') === null`));
+    // CA3: short password flagged on blur, nothing sent.
+    await fill('#password', '1234567'); await leave('#password');
+    await until(async () => await text('#password-error') === 'A senha precisa ter pelo menos 8 caracteres.');
+    assert.equal(await evaluate(`document.querySelector('#password-rule').dataset.met`), 'false');
+    await submitForm();
+    await delay(300);
+    assert.equal(registerRequests, registersBefore);
+    // CA4: the 8th character meets the rule, told by icon and text.
+    await fill('#password', '12345678');
+    await until(async () => await evaluate(`document.querySelector('#password-rule').dataset.met === 'true'`));
+    assert.equal(await text('#password-rule'), 'Mínimo de 8 caracteres. Atendido.');
     await fill('#name', 'Browser Analyst'); await fill('#email', email); await fill('#password', 'BrowserTestOnly-2026!');
     await button('Criar conta e entrar'); await waitForLookup();
+    assert.equal(registerRequests, registersBefore + 1);
     assert.equal(await evaluate(`sessionStorage.getItem('kapitrace.session') === null && localStorage.getItem('kapitrace.session') === null`), true);
     await clientNavigate('/dashboard');
     // F5.5: empty state with a way back to the lookup.
@@ -143,6 +180,17 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401, r
     await button('Sair'); await waitForLogin();
     assert.equal(await evaluate(`location.search`), '?saiu=1');
     await until(async () => await evaluate(`document.querySelector('[role="status"]')?.textContent.includes('Você saiu da sua conta.')`));
+    // SPEC-FDE 003 CA6: an existing account gets a Portuguese text, never the server's English one.
+    await button('Criar conta');
+    await until(async () => await selectedTab() === 'Criar conta');
+    await fill('#email', email); await fill('#password', 'BrowserTestOnly-2026!'); await submitForm();
+    await until(async () => (await text('[role="alert"]')).startsWith('Não foi possível criar a conta com este email.'));
+    assert.equal((await text('[role="alert"]')).includes('User already exists'), false);
+    assert.equal(await evaluate(`location.pathname`), '/login');
+    await button('Entrar');
+    await until(async () => await selectedTab() === 'Entrar' && await evaluate(`document.querySelector('#name') === null`));
+    // Switching tabs keeps the typed values; the login checks below start from an empty form.
+    await fill('#email', ''); await fill('#password', '');
     // SPEC-FDE 002 CA3: empty fields are reported next to them, in Portuguese, and nothing is sent.
     const requestsBefore = loginRequests;
     await submitLogin();
@@ -192,8 +240,21 @@ it('browser: login errors, memory JWT, protected lookup/cache, watchlist, 401, r
     await submitLogin();
     await until(async () => await text('[role="alert"]') === 'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.');
     assert.equal(await evaluate(`location.pathname`), '/login');
+    // SPEC-FDE 003 CA7: sign-up works but the automatic login does not (login still blocked).
+    const partialEmail = `partial-${email}`;
+    await button('Criar conta');
+    await until(async () => await selectedTab() === 'Criar conta');
+    const registersBeforePartial = registerRequests;
+    await fill('#email', partialEmail); await fill('#password', 'BrowserTestOnly-2026!'); await submitForm();
+    await until(async () => await text('[data-testid="register-partial"]') === 'Conta criada. Não foi possível entrar automaticamente; entre com seu email e senha.');
+    assert.equal(await selectedTab(), 'Entrar');
+    assert.equal(await evaluate(`document.querySelector('#email').value === ${JSON.stringify(partialEmail)} && document.querySelector('#password').value === ''`), true);
+    await delay(300);
+    assert.equal(registerRequests, registersBeforePartial + 1);
     await send('Network.setBlockedURLs', { urls: [] });
+    await fill('#email', email); await fill('#password', 'BrowserTestOnly-2026!');
     await submitLogin(); await waitForLookup();
+    assert.equal(registerRequests, registersBeforePartial + 1);
     await fill('[aria-label="Indicador"]', '8.8.8.8'); await button('Analisar');
     await until(async () => await evaluate(`document.querySelector('[data-testid="lookup-result"]') !== null`));
     // F6.1: focus lands on the result title.

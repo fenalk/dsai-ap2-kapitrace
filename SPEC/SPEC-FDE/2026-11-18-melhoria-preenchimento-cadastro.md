@@ -52,7 +52,7 @@ Respostas do backend: 400 `Valid email address is required`, 400 `Password must 
 - Email: obrigatório; mesmo formato da regex do backend; `maxLength={254}`.
 - Senha: obrigatória; ≥8 caracteres; `maxLength={1024}`.
 - Nome: aparar espaços antes do envio; `maxLength={100}`, o mesmo limite do backend (E7, D2).
-- Validar ao sair do campo (`blur`) e no envio, com `noValidate` no formulário e mensagens próprias:
+- Validar ao sair do campo (`blur`) e no envio, com `noValidate` no formulário e mensagens próprias. No `blur`, só valida campo em que o usuário já digitou: passar o foco por um campo vazio não mostra erro, que aparece no envio.
   - "Informe seu email." / "Informe um email válido, por exemplo nome@empresa.com.";
   - "Informe uma senha." / "A senha precisa ter pelo menos 8 caracteres.".
 - Com erro de campo, **nenhuma requisição** é enviada, e o foco vai para o primeiro campo inválido.
@@ -69,7 +69,7 @@ Respostas do backend: 400 `Valid email address is required`, 400 `Password must 
 | --- | --- |
 | 400 email inválido | junto ao Email: "Informe um email válido." |
 | 400 senha curta | junto à Senha: "A senha precisa ter pelo menos 8 caracteres." |
-| 400 conta existente | geral: "Não foi possível criar a conta com este email. Se você já tem cadastro, use 'Já tenho conta' para entrar." |
+| 400 conta existente | geral: "Não foi possível criar a conta com este email. Se você já tem cadastro, use a aba 'Entrar' para acessar." |
 | 5xx / resposta inválida | geral: "Não foi possível criar a conta agora. Tente novamente em alguns instantes." |
 | Falha de rede | geral: mensagem de conexão existente |
 
