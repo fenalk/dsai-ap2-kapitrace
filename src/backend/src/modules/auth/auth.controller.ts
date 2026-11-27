@@ -49,7 +49,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password, name } = req.body;
 
-    if (!email || !isValidEmail(email) || email.trim().length > EMAIL_MAX) {
+    // Explicit type check, as in login: no conversion of numbers, objects or arrays.
+    if (typeof email !== 'string' || !isValidEmail(email) || email.trim().length > EMAIL_MAX) {
       res.status(400).json({ error: 'Valid email address is required' });
       return;
     }
